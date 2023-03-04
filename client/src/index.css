@@ -1,0 +1,212 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.input{
+  @apply  capitalize block px-3 py-1.5 w-80 text-base font-normal bg-white bg-clip-padding  border-solid border-gray-300 rounded transition ease-in-out  m-0 focus:bg-white focus:border-blue-600 focus:outline-none 
+}
+
+body{
+  margin: 0;
+  padding: 0;
+}
+
+.body-container-login {
+  background-image: linear-gradient(to right, #312e81, #8b5cf6, #818cf8);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-container {
+  background-color: #fff;
+  width: 400px;
+  border-radius: 5px;
+}
+
+.input-login {
+  margin: 50px 10px;
+}
+
+.login-header {
+  margin: 20px 0px;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+#username, #password {
+  margin: 10px 0px;
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #e5e7eb;
+  border-radius: 5px;
+}
+
+.button-style {
+  background-color: #8b5cf6;
+  padding: 10px 20px;
+  color: #fff;
+  border-radius: 5px;
+  margin: 10px 0px;
+  width: 100%;
+}
+
+.register-account {
+  text-align: center;
+}
+
+.register-account a {
+  font-weight: bold;
+}
+
+.login-error {
+  text-align: center;
+  font-weight: bold;
+  color: red;
+  /* border: 1px solid red; */
+}
+
+.login-error p {
+  border: 1px solid red;
+  background-color: rgba(255, 0, 0, 0.1);
+  padding: 10px;
+  margin: 1%;
+}
+
+.login-success {
+  color: green;
+  text-align: center;
+  font-weight: bold;
+}
+
+.login-success p {
+  border: 1px solid green;
+  background-color: rgba(0, 128, 0, 0.1);
+  padding: 10px;
+  margin: 1%;
+}
+
+.register-error p {
+  text-align: center;
+  color: red;
+  background-color: rgba(255, 0, 0, 0.1);
+  padding: 10px;
+}
+
+.register-error {
+  border: 1px solid red;
+}
+
+.register-success p {
+  text-align: center;
+  color: green;
+  background-color: rgba(0, 128, 0, 0.1);
+  padding: 10px;
+}
+
+.register-success {
+  border: 1px solid green;
+}
+
+#scrollBar {
+  overflow: auto;
+  height: 100vh;
+  
+}
+
+#scrollBar::-webkit-scrollbar-track {
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	border-radius: 10px;
+	background-color: #fff;
+  
+}
+
+#scrollBar::-webkit-scrollbar {
+	width: 7px;
+	background-color: #fff;
+  /* display: none; */
+}
+
+#scrollBar::-webkit-scrollbar-thumb{
+	border-radius: 10px;
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+	background-color: #8b5cf6;
+}
+
+.inventory-statistics {
+  border-radius: 5px;
+  width: 30%;
+  margin: 30px 0px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.statistics-value {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.statistics-name {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #8b5cf6;
+}
+
+.filter-button-cancel {
+  background-color: red;
+  padding: 7px 15px;
+  color: #fff;
+  border-radius: 5px;
+}
+
+.filter-button-apply {
+  background-color: rgb(3, 104, 255);
+  padding: 7px 15px;
+  color: #fff;
+  border-radius: 5px;
+}
+
+.filter-button-container {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px 0px;
+}
+
+.billing-button-icon {
+  color: #8b5cf6;
+  font-size: 40px;
+}
+
+.billing-button-icon:hover {
+  background-color: rgb(189, 189, 189);
+}
+
+.billing-input-cont {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reset-error {
+  background-color: rgba(255, 0, 0, 0.1);
+  border: 1px solid red;
+  padding: 10px;
+  color: red;
+  margin: 5px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.reset-success {
+  background-color: rgba(0, 128, 0, 0.1);
+  border: 1px solid green;
+  padding: 10px;
+  color: green;
+  margin: 5px;
+  font-weight: bold;
+  text-align: center;
+}
