@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -31,6 +32,10 @@ export const Login = () => {
 
   return (
     <div className='body-container-login'>
+      <Helmet>
+        <title>JMI | Login Page</title>
+        <meta name="login page" content="This is the Login Section" />
+      </Helmet>
       <div className='login-container'>
         <h1 className='login-header'>Login</h1>
         <div
@@ -54,7 +59,6 @@ export const Login = () => {
           </div>
           <div className='register-account'>
             <p>Forgot your password ? <Link to='/forgot' style={{ fontWeight: 'normal', textDecoration: 'underline' }}>Reset your password</Link></p>
-            <p>Don't have an account? <Link to='/register' className='register-now'>Register now!</Link></p>
           </div>
         </div>
       </div>

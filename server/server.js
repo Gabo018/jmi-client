@@ -47,24 +47,6 @@ apiRouters.get('/protected', authToken, async (req, res) => {
 // End Authentication Routers
 
 // Start Login System Routers
-apiRouters.post('/register', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const addData = new Admin({ email, password })
-    const saveAdmin = await addData.save();
-    res.json({
-      status: 200,
-      message: 'Admin User Registered Successfully.'
-    })
-  } catch (err) {
-    if (err.code === 11000) {
-      res.json({
-        status: 11000,
-        message: 'Email & Password has been taken.'
-      })
-    }
-  }
-})
 
 apiRouters.post('/login', async (req, res) => {
   try {

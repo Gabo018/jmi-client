@@ -48,6 +48,17 @@ export const AddBill = () => {
     }
   }
 
+  function contactLimit(event) {
+    if (event.target.value.length >= 11) {
+      event.target.removeAttribute('type');
+    }
+    // setValue(event.target.value);
+    setProductInfo((prev) => ({
+      ...prev,
+      ['contact']: event.target.value
+    }))
+  }
+
   return (
     <div className="pl-80 pr-28 bg-gradient-to-r from-indigo-900 via-violet-500 to-indigo-400 h-screen">
       <Helmet>
@@ -85,10 +96,13 @@ export const AddBill = () => {
             <input
               name='contact'
               type="number"
+              onInput={contactLimit}
               id="contact"
               placeholder="Contact"
+              maxLength={11}
               onChange={onChangeBill}
               required
+
               className=" input  border border-solid border-gray-300"
             />
 
@@ -120,6 +134,7 @@ export const AddBill = () => {
                 id="productCode"
                 placeholder="Product Code"
                 onChange={onChangeBill}
+                maxLength={12}
                 required
                 className="input  border border-solid border-gray-300"
               />

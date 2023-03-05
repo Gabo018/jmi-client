@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 
 export const ForgotPass = () => {
@@ -34,6 +35,10 @@ export const ForgotPass = () => {
   }
   return (
     <div className='body-container-login'>
+      <Helmet>
+        <title>JMI | Forgot Page</title>
+        <meta name="forgot page" content="This is the Forgot Section" />
+      </Helmet>
       <div className='login-container'>
         <h1 className='login-header'>Forgot Password</h1>
         <div
@@ -54,7 +59,6 @@ export const ForgotPass = () => {
             </div>
             <div className='register-account'>
               <p>Already have an account? <Link to='/login' className='register-now'>Login now!</Link></p>
-              <p>Don't have an account? <Link to='/register' className='register-now'>Register now!</Link></p>
             </div>
           </div>
         </form>

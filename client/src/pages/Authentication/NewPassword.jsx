@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 
 export const NewPassword = () => {
-  // const { token } = useParams();
   const searchParams = new URLSearchParams(document.location.search)
   const token = searchParams.get('token')
   const [error, setError] = useState();
@@ -35,6 +35,10 @@ export const NewPassword = () => {
 
   return (
     <div className='body-container-login'>
+      <Helmet>
+        <title>JMI | New Password Page</title>
+        <meta name="new password page" content="This is the New Password Section" />
+      </Helmet>
       <div className='login-container'>
         <h1 className='login-header'>Reset Password</h1>
         <div
@@ -58,7 +62,6 @@ export const NewPassword = () => {
           </div>
           <div className='register-account'>
             <p>Already have an account? <Link to='/login' className='register-now'>Login now!</Link></p>
-            <p>Don't have an account? <Link to='/register' className='register-now'>Register now!</Link></p>
           </div>
         </div>
       </div>

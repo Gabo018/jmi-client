@@ -54,6 +54,7 @@ export const AddInventory = () => {
               type="text"
               id="code"
               placeholder="Code"
+              maxLength={10}
               required
               className="input  border border-solid border-gray-300"
               onChange={onChangeData}

@@ -31,6 +31,10 @@ export const VieBill = () => {
         accessor: 'productCode',
       },
       {
+        Header: 'Amount',
+        accessor: 'productInfo[0].amount',
+      },
+      {
         Header: 'Date',
         accessor: 'date',
         Cell: ({ value }) => moment(value).format('MMMM DD, YYYY')
@@ -128,6 +132,7 @@ export const VieBill = () => {
         }
       })
       const dataJson = await dataResponse.json()
+      console.log(dataJson)
       setTableData(dataJson)
     } catch (err) {
       console.log(err)

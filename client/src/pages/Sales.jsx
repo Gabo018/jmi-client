@@ -37,9 +37,9 @@ export const Sales = () => {
         <table className="border-collapse border-b border-x-transparent border-slate-400  bg-white mt-8 w-3/5 ">
           <thead>
             <tr className="text-violet-600">
-              <th className="border-b border-slate-300 p-2 w-1/2">Month</th>
-              <th className="border-b border-slate-300 w-1/6 p-2">Sales</th>
-              <th className="border-b border-slate-300  w-1/2 p-2">Year</th>
+              <th className="border-b border-slate-300 p-3 w-1/2">Month</th>
+              <th className="border-b border-slate-300 w-1/6 p-3">Sales</th>
+              <th className="border-b border-slate-300  w-1/2 p-3">Year</th>
             </tr>
           </thead>
           <tbody>
@@ -48,16 +48,17 @@ export const Sales = () => {
                 return (
                   <tr
                     key={index}
-                    className="border-b border-slate-300 odd:bg-zinc-300 "
+                    className="border-b border-slate-300 odd:bg-zinc-300"
+                  // style={{ border: '1px solid red', padding: 80 }}
                   >
-                    <td className="p-1 text-center font-medium text-lg">
+                    <td className="p-3 text-center font-medium text-lg">
                       {sale.Month}
                     </td>
-                    <td className="p-1 text-center font-medium text-lg">
+                    <td className="p-3 text-center font-medium text-lg">
                       {sale.Sales.toLocaleString()}
                     </td>
 
-                    <td className="p-1 text-center font-medium text-lg">
+                    <td className="p-3 text-center font-medium text-lg">
                       {sale._id.Year}
                     </td>
                   </tr>

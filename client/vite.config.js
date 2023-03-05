@@ -14,9 +14,9 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/api': {
           target: env.VITE_DOMAIN_SERVER,
-          secure: true,
-          changeOrigin: true,
-          agent: new http.Agent()
+          secure: false,
+          // changeOrigin: true,
+          // agent: new http.Agent()
         },
       }
     }

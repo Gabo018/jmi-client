@@ -45,6 +45,17 @@ export const EditBill = () => {
     }
   }
 
+  function contactLimit(event) {
+    if (event.target.value.length >= 11) {
+      event.target.removeAttribute('type');
+    }
+    // setValue(event.target.value);
+    setBilling((prev) => ({
+      ...prev,
+      ['contact']: event.target.value
+    }))
+  }
+
   useEffect(() => {
     billingIdFetch()
   }, [])
@@ -93,6 +104,8 @@ export const EditBill = () => {
               name='contact'
               type="number"
               id="contact"
+              onInput={contactLimit}
+              maxLength={11}
               placeholder="Contact No."
               value={billing?.contact}
               onChange={onChangeBilling}

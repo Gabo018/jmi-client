@@ -26,6 +26,7 @@ export const Register = () => {
 
   return (
     <div className='body-container-login'>
+
       <div className='login-container'>
         <h1 className='login-header'>Register</h1>
         <div className='input-login'>
