@@ -1,7 +1,9 @@
 import React from 'react'
 import HomeBannerImg from '../assets/home-jmi.png'
+import { useNavigate } from 'react-router-dom'
 
 export const Home = () => {
+  const navigate = useNavigate();
   return (
     <div className="pl-80 pr-28 bg-gradient-to-r from-indigo-900 via-violet-500 to-indigo-400 h-screen">
       <div className='flex items-center h-screen justify-center flex-col'>
@@ -11,7 +13,7 @@ export const Home = () => {
 
         <div className='home-button flex mt-10'>
 
-          <button className='bg-white flex items-center py-3 px-6 rounded-full mx-5'>
+          <button className='bg-white flex items-center py-3 px-6 rounded-full mx-5' onClick={() => navigate('/viewBill')}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -25,7 +27,7 @@ export const Home = () => {
             <p className='pl-2 text-violet-600 font-bold'>Billing</p>
           </button>
 
-          <button className='bg-white flex items-center py-3 px-6 rounded-full mx-5'>
+          <button className='bg-white flex items-center py-3 px-6 rounded-full mx-5' onClick={() => navigate('/expenseRecord')}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -40,7 +42,7 @@ export const Home = () => {
             <p className='pl-2 text-violet-600 font-bold'>Expenses</p>
           </button>
 
-          <button className='bg-white flex items-center py-3 px-6 rounded-full mx-5'>
+          <button className='bg-white flex items-center py-3 px-6 rounded-full mx-5' onClick={() => navigate('/viewInventory')}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
