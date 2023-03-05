@@ -59,12 +59,12 @@ export const ForgotPass = () => {
             </div>
             <div className='register-account'>
               <p>Already have an account? <Link to='/login' className='register-now'>Login now!</Link></p>
-            </div>
-          </div>
-        </form>
+            </div >
+          </div >
+        </form >
 
-      </div>
+      </div >
 
-    </div>
+    </div >
   )
 }

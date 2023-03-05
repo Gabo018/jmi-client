@@ -59,10 +59,10 @@ export const Login = () => {
           </div>
           <div className='register-account'>
             <p>Forgot your password ? <Link to='/forgot' style={{ fontWeight: 'normal', textDecoration: 'underline' }}>Reset your password</Link></p>
-          </div>
-        </div>
-      </div>
+          </div >
+        </div >
+      </div >
 
-    </div>
+    </div >
   )
 }

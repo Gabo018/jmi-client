@@ -62,9 +62,9 @@ export const Loss = () => {
                   </tr>
                 );
               })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+          </tbody >
+        </table >
+      </div >
+    </div >
   );
 };
