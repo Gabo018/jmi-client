@@ -435,63 +435,77 @@ apiRouters.delete('/expenses/:id', authToken, async (req, res) => {
 // End Expenses Routers
 
 // Start Balance Sheet Routers
-apiRouters.get("/sales", async (req, res) => {
-  const data = await Billing.aggregate(
-    [
+apiRouters.get('/sales', async (req, res) => {
+  try {
+    const data = await Billing.aggregate([
+      {
+        $lookup: {
+          from: 'inventory',
+          localField: 'productCode',
+          foreignField: 'code',
+          as: 'product'
+        }
+      },
+      {
+        $unwind: "$product"
+      },
       {
         $group: {
           _id: {
-            Month: {
-              $month: "$date",
-            },
-            Year: {
-              $year: "$date",
-            },
+            month: { $month: "$date" },
+            year: { $year: "$date" }
           },
-          Sales: {
-            $sum: "$total",
-          },
-        },
+          totalSales: {
+            $sum: "$product.amount"
+          }
+        }
       },
       {
         $project: {
-          Sales: "$Sales",
-          Month: {
-            $arrayElemAt: [
-              [
-                "",
-                "Jan",
-                "Feb",
-                "Mar",
-                "Apr",
-                "May",
-                "Jun",
-                "Jul",
-                "Aug",
-                "Sep",
-                "Oct",
-                "Nov",
-                "Dec",
-              ],
-              "$_id.Month",
-            ],
+          _id: 0,
+          sales: "$totalSales",
+          month: {
+            $let: {
+              vars: {
+                monthsInYear: [
+                  "January",
+                  "February",
+                  "March",
+                  "April",
+                  "May",
+                  "June",
+                  "July",
+                  "August",
+                  "September",
+                  "October",
+                  "November",
+                  "December"
+                ]
+              },
+              in: {
+                $arrayElemAt: [
+                  "$$monthsInYear",
+                  { $subtract: ["$_id.month", 1] }
+                ]
+              }
+            }
           },
-        },
-      },
-      {
-        $sort: {
-          "_id.Month": 1,
-          "_id.Year": 1,
-        },
-      },
-    ],
-    function (err, result) {
-      return result;
-    }
-  );
+          year: "$_id.year"
+        }
+      }
+    ]);
 
-  res.json({ success: true, data: data });
-});
+
+    res.json({
+      success: true,
+      data: data
+    })
+  } catch (err) {
+    console.log(err)
+  }
+})
+
+
 
 apiRouters.get("/loss", async (req, res) => {
   const ExpenseLoss = await Expenses.aggregate(
@@ -552,25 +566,37 @@ apiRouters.get("/loss", async (req, res) => {
 });
 
 apiRouters.get("/netProfit", async (req, res) => {
-  const totalSale = await Billing.aggregate(
-    [
-      {
-        $group: {
-          _id: {
-            Year: {
-              $year: "$date",
-            },
-          },
-          Sales: {
-            $sum: "$total",
-          },
+
+  const totalSale = await Billing.aggregate([
+    {
+      $lookup: {
+        from: 'inventory',
+        localField: 'productCode',
+        foreignField: 'code',
+        as: 'product'
+      }
+    },
+    {
+      $unwind: "$product"
+    },
+    {
+      $group: {
+        _id: {
+          Year: { $year: "$date" }
         },
-      },
-    ],
-    function (err, result) {
-      return result;
+        totalSales: {
+          $sum: "$product.amount"
+        }
+      }
+    },
+    {
+      $project: {
+        _id: "$_id",
+        Sales: "$totalSales",
+        // year: "$_id"
+      }
     }
-  );
+  ]);
 
   const totalExpense = await Expenses.aggregate(
     [

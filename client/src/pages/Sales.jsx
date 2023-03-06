@@ -52,14 +52,14 @@ export const Sales = () => {
                   // style={{ border: '1px solid red', padding: 80 }}
                   >
                     <td className="p-3 text-center font-medium text-lg">
-                      {sale.Month}
+                      {sale.month}
                     </td>
                     <td className="p-3 text-center font-medium text-lg">
-                      {sale.Sales.toLocaleString()}
+                      {sale.sales.toLocaleString()}
                     </td>
 
                     <td className="p-3 text-center font-medium text-lg">
-                      {sale._id.Year}
+                      {sale.year}
                     </td>
                   </tr>
                 );
