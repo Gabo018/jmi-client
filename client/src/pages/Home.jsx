@@ -58,14 +58,14 @@ export const Home = () => {
         <HomeCard
           color={'green'}
           title='Sales'
-          link='/sales'
+          link='/viewBill'
           total={data?.totalSales.toFixed(2) || 0}
         />
 
         <HomeCard
           color={'orange'}
           title='Expenses'
-          link='/loss'
+          link='/expenseRecord'
           total={data?.totalExpenses.toFixed(2) || 0}
         />
 
