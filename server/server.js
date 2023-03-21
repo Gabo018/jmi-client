@@ -409,8 +409,7 @@ apiRouters.post('/expenses', authToken, async (req, res) => {
     const { deductionType, description, amount, date } = req.body;
     const { name } = req.user;
     if (deductionType && description && amount && date) {
-      const tax = parseInt(amount) * .12;
-      const addExpenses = await new Expenses({ deductionType, description, amount: parseInt(amount) + tax, date, processBy: name }).save();
+      const addExpenses = await new Expenses({ deductionType, description, amount, date, processBy: name }).save();
       return res.json({
         code: 200,
         message: 'Expenses Added Successfully.'

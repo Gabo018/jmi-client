@@ -52,21 +52,21 @@ export const Home = () => {
           color={'red'}
           title='Item Inventory'
           link='/viewInventory'
-          total={data?.inventoryTotalItem || 0}
+          total={data?.inventoryTotalItem.toFixed(2) || 0}
         />
 
         <HomeCard
           color={'green'}
           title='Sales'
           link='/sales'
-          total={data?.totalSales || 0}
+          total={data?.totalSales.toFixed(2) || 0}
         />
 
         <HomeCard
           color={'orange'}
           title='Expenses'
           link='/loss'
-          total={data?.totalExpenses || 0}
+          total={data?.totalExpenses.toFixed(2) || 0}
         />
 
 
