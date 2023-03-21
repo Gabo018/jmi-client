@@ -13,8 +13,8 @@ export const VieBill = () => {
 
   // Start React Table
   const [tableData, setTableData] = useState({ statistics: {}, data: [] });
-  const data = useMemo(() => tableData.data, [tableData]
-  )
+  const data = useMemo(() => tableData.data, [tableData])
+  console.log(tableData)
 
   const columns = useMemo(
     () => [
@@ -29,6 +29,10 @@ export const VieBill = () => {
       {
         Header: 'Product Code',
         accessor: 'productCode',
+      },
+      {
+        Header: 'Description',
+        accessor: 'productInfo[0].description',
       },
       {
         Header: 'Amount',

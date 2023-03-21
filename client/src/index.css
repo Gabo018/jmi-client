@@ -210,3 +210,37 @@ body{
   font-weight: bold;
   text-align: center;
 }
+
+.home-card {
+  width: 300px;
+}
+
+.card-name-value {
+  padding: 10px;
+}
+
+.card-value {
+  font-size: 2.5rem;
+  color: #fff;
+}
+
+.card-name {
+  font-weight: bold;
+  color: #fff;
+}
+
+.more-info {
+  padding: 2px;
+  background-color: rgba(0,0,0,.3);
+}
+
+.more-info a {
+  display: flex;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: #fff;
+}
+
+.more-info a svg {
+  margin-left: 5px;
+}

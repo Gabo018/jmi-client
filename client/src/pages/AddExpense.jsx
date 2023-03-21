@@ -16,6 +16,7 @@ export const AddExpense = () => {
   }
   const onSubmitExpenses = async () => {
     try {
+      console.log(expenses)
       const addExpenses = await fetch(`/api/expenses`, {
         method: 'POST',
         headers: {

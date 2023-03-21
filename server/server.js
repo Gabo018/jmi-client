@@ -78,8 +78,8 @@ apiRouters.post('/login', async (req, res) => {
         if (checkUsername) {
           const checkPassword = await bcrypt.compare(password, checkUsername.password)
           if (checkPassword) {
-            const { _id, email } = checkUsername;
-            const token = jwt.sign({ _id, email }, process.env.JWT_SECRET_KEY, { expiresIn: 60 * 60 });
+            const { _id, email, name } = checkUsername;
+            const token = jwt.sign({ _id, email, name }, process.env.JWT_SECRET_KEY, { expiresIn: 60 * 60 });
             return res.json({ token })
           } else {
             return res.status(404).json({
@@ -103,6 +103,25 @@ apiRouters.post('/login', async (req, res) => {
     }
   } catch (err) {
     console.log(err.message)
+  }
+})
+
+apiRouters.post('/register', async (req, res) => {
+  try {
+    const { email, password, name } = req.body;
+    const addData = new Admin({ email, password, name })
+    const saveAdmin = await addData.save();
+    res.json({
+      status: 200,
+      message: 'Admin User Registered Successfully.'
+    })
+  } catch (err) {
+    if (err.code === 11000) {
+      res.json({
+        status: 11000,
+        message: 'Email & Password has been taken.'
+      })
+    }
   }
 })
 
@@ -194,6 +213,43 @@ apiRouters.put('/new-password/:token', async (req, res) => {
 })
 // End Login System Routers
 
+// Start Home
+apiRouters.get('/homeData', authToken, async (req, res) => {
+  try {
+    const inventoryCount = await Inventory.find({}).count()
+
+    const billResponse = await Billing.aggregate([
+      {
+        $lookup: {
+          from: 'inventory',
+          localField: 'productCode',
+          foreignField: 'code',
+          as: 'productInfo'
+        }
+      }]
+    )
+    const billSales = billResponse.reduce((acc, val) => acc + val.productInfo.reduce((sum, product) => sum + product.amount, 0), 0)
+
+    const expensesLoss = await Expenses.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$amount" }
+        }
+      }
+    ]);
+    res.json({
+      inventoryTotalItem: inventoryCount,
+      totalExpenses: expensesLoss[0].totalAmount,
+      totalSales: billSales,
+    })
+  } catch (err) {
+    console.log(err)
+  }
+})
+
+// End Home
+
 // Start Bill Routers
 apiRouters.post('/addBill', async (req, res) => {
   try {
@@ -274,6 +330,9 @@ apiRouters.get('/bill', async (req, res) => {
         data: billResponse
       })
     }
+
+
+
     const billResponse = await Billing.aggregate([
       {
         $lookup: {
@@ -348,10 +407,10 @@ apiRouters.post('/expenses', authToken, async (req, res) => {
   // const data = req.body;
   try {
     const { deductionType, description, amount, date } = req.body;
-    const { email } = req.user;
+    const { name } = req.user;
     if (deductionType && description && amount && date) {
       const tax = parseInt(amount) * .12;
-      const addExpenses = await new Expenses({ deductionType, description, amount: parseInt(amount) + tax, date, processBy: email }).save();
+      const addExpenses = await new Expenses({ deductionType, description, amount: parseInt(amount) + tax, date, processBy: name }).save();
       return res.json({
         code: 200,
         message: 'Expenses Added Successfully.'
