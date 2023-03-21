@@ -217,6 +217,7 @@ apiRouters.put('/new-password/:token', async (req, res) => {
 apiRouters.get('/homeData', authToken, async (req, res) => {
   try {
     const inventoryCount = await Inventory.find({}).count()
+    const billingCount = await Billing.find({}).count();
 
     const billResponse = await Billing.aggregate([
       {
@@ -239,7 +240,7 @@ apiRouters.get('/homeData', authToken, async (req, res) => {
       }
     ]);
     res.json({
-      inventoryTotalItem: inventoryCount,
+      inventoryTotalItem: inventoryCount - billingCount,
       totalExpenses: expensesLoss[0].totalAmount,
       totalSales: billSales,
     })
