@@ -7,7 +7,7 @@ import moment from 'moment'
 import { DateRangePicker } from 'react-date-range'
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
-import { Button, Space, Table, Tag, Input, Col, Row } from 'antd';
+import { Button, Space, Table, Tag, Input, Col, Row, DatePicker } from 'antd';
 
 
 
@@ -80,17 +80,17 @@ export const VieBill = () => {
       dataIndex: 'address',
       key: 'address',
     },
-    {
-      title: 'Action',
-      fixed: "right",
-      key: 'action',
-      render: (_, record) => (
-        <Space size="middle">
-          <a>Invite {record.name}</a>
-          <a>Delete</a>
-        </Space>
-      ),
-    },
+    // {
+    //   title: 'Action',
+    //   fixed: "right",
+    //   key: 'action',
+    //   render: (_, record) => (
+    //     <Space size="middle">
+    //       <a>Invite {record.name}</a>
+    //       <a>Delete</a>
+    //     </Space>
+    //   ),
+    // },
   ];
   const data1 = [
     {
@@ -121,7 +121,7 @@ export const VieBill = () => {
   // Start React Table
   const [tableData, setTableData] = useState({ statistics: {}, data: [] });
   const data = useMemo(() => tableData.data, [tableData])
-  console.log(tableData)
+
 
   const columns = useMemo(
     () => [
@@ -377,6 +377,12 @@ export const VieBill = () => {
                 onSearch={""}
               />
             </div>
+            <div className='flex gap-3'>
+             
+              <DatePicker.RangePicker
+                
+              />
+            </div>
           </div>
           <Row>
           <Col xl={24} style={{ width: "80vw" }}>
@@ -390,6 +396,13 @@ export const VieBill = () => {
                   dataSource={data1}
                   pagination={{
                     position: ["bottomCenter"]
+                  }}
+                  onRow={(record, rowIndex) => {
+                    return {
+                      onClick: () => {
+                        window.location.href = `/viewbill/${record.id}`;
+                      },
+                    };
                   }}
                   scroll={{
                     x: 3000
