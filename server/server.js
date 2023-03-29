@@ -285,6 +285,7 @@ apiRouters.post("/addBill", async (req, res) => {
       due_date,
       payment_date,
       total_payment,
+      archive: true,
     });
 
     newBilling.save();
@@ -295,6 +296,54 @@ apiRouters.post("/addBill", async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+  }
+});
+
+//change archive to active
+apiRouters.patch("/bill-archive/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const billResponse = await Billing.findById(id);
+
+    if (!billResponse) {
+      return res.status(404).json({
+        code: 404,
+        message: "Billing not found.",
+      });
+    }
+
+    // Toggle the value of the 'archive' field
+    const updatedBill = await Billing.findByIdAndUpdate(
+      id,
+      { $set: { archive: billResponse.archive ? false : true } },
+      { new: true } // Return the updated document
+    );
+
+    res.json(updatedBill);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      code: 500,
+      message: "Server error.",
+    });
+  }
+});
+
+//get all list of archive billing
+
+apiRouters.get("/bill/archive-list", async (req, res) => {
+  try {
+    const billResponse = await Billing.find({
+      $or: [{ archive: false }, { archive: { $exists: false } }],
+    });
+
+    res.status(200).json(billResponse);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      code: 500,
+      message: "Server error.",
+    });
   }
 });
 

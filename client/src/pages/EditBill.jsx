@@ -208,6 +208,8 @@ export const EditBill = () => {
             >
               <br />
               <span className="text-gray-600">Processed By: Marc Jeibriel</span>
+              <br />
+              <span className="text-gray-600">Status: {userData.archive  ? <span className="text-green-500">Active </span>: <span className="text-red-700">Archive</span>}</span>
             </small>
           </section>
           <section className="px-8 ">

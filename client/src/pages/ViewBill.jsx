@@ -34,6 +34,8 @@ export const VieBill = () => {
     queryFn: userGetBill(params),
   });
 
+  console.log(dataBill)
+
   const currentYear = new Date().getFullYear() % 100;
   const currentDate = moment();
 
@@ -120,10 +122,12 @@ export const VieBill = () => {
     },
     {
       title: "Status",
-      dataIndex: "total_payment",
-      key: "address",
-      render: () => {
-        return <span className="text-green-600">Active</span>;
+      dataIndex: "archive",
+      key: "archive",
+      render: (text) => {
+        return (
+          <span className={text ? "text-green-500" : "text-red-600"}>{text  ? "Active" : "Archive"}</span>
+        )
       },
     },
   ];
@@ -202,6 +206,9 @@ export const VieBill = () => {
             />
           </div>
           <div className="flex gap-3">
+         <button className="bg-red-600 text-white p-2 rounded-md">
+          Archive List
+         </button>
             <DatePicker.RangePicker
               onChange={(e) => setDateRange(e)}
               value={dateRange}

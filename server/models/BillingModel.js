@@ -20,7 +20,10 @@ const billingSchema = new Schema(
       type: String,
       required: true,
     },
-
+    archive: {
+      type: Boolean,
+      required: true,
+    },
     createdAt: {
       type: Date,
       default: Date.now,
