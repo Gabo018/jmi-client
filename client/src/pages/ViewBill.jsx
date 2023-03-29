@@ -14,6 +14,7 @@ import { userGetBill } from "../modules/service-viewBill";
 export const VieBill = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [dateRange, setDateRange] = useState();
+  const [totalWithoutTax , setTotalWihoutTax] = useState();
 
   const firstDateRange = dateRange && dateRange.length === 2 && moment(dateRange[0], "YYYY-MM-DD").isValid() ? Object.values(dateRange)[0] : null;
   const secondDateRange = dateRange && dateRange.length === 2 && moment(dateRange[1], "YYYY-MM-DD").isValid() ? Object.values(dateRange)[1] : moment();
@@ -156,8 +157,24 @@ export const VieBill = () => {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
   const filteredData = sortedDataSource.filter((record) => record.name === searchTerm);
+  
+  const taxRate = 0.12; // 12% tax rate
+
 
   
+  const dataSum = data1.map((item) => {
+    const total_payment = parseInt(item.total_payment)
+    return  total_payment + total_payment
+  })
+
+  function myFunc(total, num) {
+  return total + num;
+}
+
+const totalAll = dataSum.reduce(myFunc)
+const taxExcludedAmount = Math.round(totalAll / (1 + taxRate));
+  
+console.log(totalAll)
 
   console.log("this is the filtered data", filteredData);
 
@@ -241,6 +258,8 @@ export const VieBill = () => {
                 x: 2000,
               }}
             />
+            <h5>Total Payment (without tax) : ₱{totalAll} </h5>
+            <h5>Total Payment (with tax) : ₱{taxExcludedAmount}  </h5>
           </Col>
         </Row>
       </div>
