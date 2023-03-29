@@ -164,7 +164,7 @@ export const VieBill = () => {
         minHeight: "100vh",
       }}
     >
-      {console.log(dateRange)}
+   
       <div className="pt-28 pb-10">
         <Row gutter={24}>
           <Col xs={24} lg={8} className="bg-white ">
@@ -220,9 +220,10 @@ export const VieBill = () => {
                 position: ["bottomCenter"],
               }}
               onRow={(record, rowIndex) => {
+ 
                 return {
                   onClick: () => {
-                    window.location.href = `/viewbill/${record.id}`;
+                    window.location.href = `/viewbill/${record._id}?index=${rowIndex + 1  }`;
                   },
                 };
               }}

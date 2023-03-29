@@ -1,11 +1,59 @@
-import React, { useState, useEffect } from "react";
-import { Helmet } from "react-helmet";
-import { useParams, useNavigate } from "react-router-dom";
+import React, {  useState,  } from "react";
+
+import { useLocation, useParams} from "react-router-dom";
 import moment from "moment";
-import { Col, DatePicker, Row, Space, Table, Tag, Modal, Button } from "antd";
+import { Col, DatePicker, Row, Table, Tag, Modal, Button, Form } from "antd";
+import { userGetData } from "../modules/service-getUserData";
+import { useQuery } from "react-query";
 
 export const EditBill = () => {
+  const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  let { id } = useParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const index = searchParams.get('index');
+
+  const currentYear = new Date().getFullYear() % 100;
+
+
+
+  const {
+    data,
+    isLoading,
+    isSuccess,
+    isError,
+  
+  } = useQuery({
+    queryKey: "user-data",
+    queryFn: userGetData(id)
+  });
+
+
+
+  if(isLoading){
+    return(
+      <div className="pl-80 flex justify-center items-center">
+      <h5>Loading...</h5>
+      </div>
+    )
+  }
+  if(isError){
+    return(
+      <div className="pl-80 flex justify-center items-center">
+        <h5>Something Went wrong</h5>
+      </div>
+    )
+  }
+
+  const userData=  data.data.data;
+  
+
+  const onSubmit = (values) => {
+    console.log(values)
+  }
+
 
   const handleShowReceipt = () => {
     setIsModalVisible(true);
@@ -129,74 +177,30 @@ export const EditBill = () => {
     },
   ];
 
-  const navigate = useNavigate();
-  let { id } = useParams();
-  const [billing, setBilling] = useState({ name: "", contact: "", date: "" });
-  const billingIdFetch = async () => {
-    try {
-      const billingResponse = await fetch(`/api/viewBill/${id}`);
-      if (billingResponse.ok) {
-        const billingJson = await billingResponse.json();
-        setBilling(billingJson);
-      }
-    } catch (err) {
-      console.log();
-    }
-  };
-  const onChangeBilling = ({ target }) => {
-    const { name, value } = target;
-    setBilling((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-  const onSubmitBilling = async () => {
-    try {
-      const updateBilling = await fetch(`/api/viewBill/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(billing),
-      });
-      if (updateBilling.ok) {
-        const updateJson = await updateBilling.json();
-        // console.log(updateJson)
-        alert("Updated Successfully");
-        navigate("/viewBill");
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
 
-  function contactLimit(event) {
-    if (event.target.value.length >= 11) {
-      event.target.removeAttribute("type");
-    }
-    // setValue(event.target.value);
-    setBilling((prev) => ({
-      ...prev,
-      ["contact"]: event.target.value,
-    }));
+  
+
+
+  const initialValues = {
+    invoice_date: userData.createdAt ? moment(userData?.createdAt , "YYYY/MM/DD") : null,
+    due_date: userData.due_date ? moment(userData?.due_date , "YYYY/MM/DD") : null,
+    payment_date: userData.payment_date ? moment(userData?.payment_date , "YYYY/MM/DD") : null
   }
+  console.log(initialValues)
 
-  useEffect(() => {
-    billingIdFetch();
-  }, []);
 
   return (
     <div className="pl-80 pr-28 bg-gray-200 pb-20 h-screen">
       <div className="flex flex-col items- bg-gray-200 px-8 justify-start h- w-full">
         <div className="pt-10 pb-10 flex justify-between items-start w-full">
           <section className="lh-sm ">
-            <span className="fw-bold text-2xl font-bold">BINV/00005/23</span>
+            <span className="fw-bold text-2xl font-bold">BINV/0000{index}/{currentYear}</span>
             <br />
             <small
               className=" text-center mx-auto text-capitalize fw-semibold"
               style={{ color: "#000fff" }}
             >
-              John Ruzell Rivera
+            {userData.name}
             </small>
             <small
               className=" text-center mx-auto text-capitalize fw-semibold"
@@ -206,14 +210,24 @@ export const EditBill = () => {
               <span className="text-gray-600">Processed By: Marc Jeibriel</span>
             </small>
           </section>
-          <section className="px-8 py-4 ">
-            <div className="flex flex-col space-y-4">
+          <section className="px-8 ">
+           <Form form={form} 
+           onFinish={onSubmit}
+           initialValues={
+            {
+             ...initialValues
+             }
+           }
+           >
+           <div className="flex flex-col">
               <div className="flex items-center">
                 <small className="font-semibold w-1/3 whitespace-nowrap mx-2">
                   Invoice Date:
                 </small>
                 <div className="w-2/3">
-                  <DatePicker className="w-full" placeholder="Select Date" />
+                <Form.Item name="invoice_date">
+                <DatePicker className="w-full" placeholder="Select Date" />
+                </Form.Item>
                 </div>
               </div>
               <div className="flex items-center">
@@ -221,7 +235,9 @@ export const EditBill = () => {
                   Payment Date:
                 </small>
                 <div className="w-2/3">
-                  <DatePicker className="w-full" placeholder="Select Date" />
+               <Form.Item name="payment_date">
+               <DatePicker className="w-full" placeholder="Select Date" />
+               </Form.Item>
                 </div>
               </div>
               <div className="flex items-center">
@@ -229,10 +245,13 @@ export const EditBill = () => {
                   Due Date:
                 </small>
                 <div className="w-2/3">
+                <Form.Item name="due_date">
                   <DatePicker className="w-full" placeholder="Select Date" />
+                  </Form.Item>
                 </div>
               </div>
             </div>
+           </Form>
           </section>
         </div>
         <Row>
@@ -258,20 +277,25 @@ export const EditBill = () => {
               Archive
             </button>
           </div>
+         <div className="space-x-3">
+         <button
 
+         onClick={form.submit}
+            className="bg-green-500 hover:bg-blue-700 p-2 text-white d  px-4 rounded"
+     
+          >Save</button>
           <button
             className="bg-blue-500 hover:bg-blue-700 p-2 text-white d  px-4 rounded"
             onClick={handleShowReceipt}
           >Receipt</button>
+         </div>
           <Modal
             title="Receipt"
             visible={isModalVisible}
             onCancel={handleCancel}
             footer={[
-              <div className="flex justify-between items-start mx-2">
-               <Button key="save" onClick={''} className="bg-green-500 text-white">
-                Save
-              </Button>,
+              <div className="flex justify-end items-start mx-2">
+              
               <Button key="primary" type="primary" onClick={''} className="bg-blue-500 text-white"> 
                 Export
               </Button>
