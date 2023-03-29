@@ -2,9 +2,10 @@ import React, {  useState,  } from "react";
 
 import { useLocation, useParams} from "react-router-dom";
 import moment from "moment";
-import { Col, DatePicker, Row, Table, Tag, Modal, Button, Form } from "antd";
+import { Col, DatePicker, Row, Table, Tag, Modal, Button, Form, notification } from "antd";
 import { userGetData } from "../modules/service-getUserData";
-import { useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
+import { userDeleteBill } from "../modules/service-deleteBill";
 
 export const EditBill = () => {
   const [form] = Form.useForm();
@@ -29,6 +30,8 @@ export const EditBill = () => {
     queryKey: "user-data",
     queryFn: userGetData(id)
   });
+
+  const {mutate } = useMutation(userDeleteBill)
 
 
 
@@ -62,6 +65,26 @@ export const EditBill = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
   };
+
+  const handleDelete = (id) => {
+    mutate(id , {
+      onSuccess:() => {
+        form.resetFields();
+        notification.success({
+          message: "Success",
+          description: "Billing moved to archive list",
+        });
+      },
+      onError:() => {
+        notification.error({
+          message: "Failed",
+          description: "Something went wrong",
+        });
+        
+      }
+    })
+
+  }
 
   const modalContent = (
     <div className="bg-gray-100 border-2 border-black p-5">
@@ -186,7 +209,7 @@ export const EditBill = () => {
     due_date: userData.due_date ? moment(userData?.due_date , "YYYY/MM/DD") : null,
     payment_date: userData.payment_date ? moment(userData?.payment_date , "YYYY/MM/DD") : null
   }
-  console.log(initialValues)
+
 
 
   return (
@@ -275,7 +298,7 @@ export const EditBill = () => {
         </Row>
         <div className="flex justify-between">
           <div>
-            <button className="bg-red-500 hover:bg-red-700 p-2 text-white   px-4 rounded">
+            <button onClick={() => handleDelete(userData._id)} className="bg-red-500 hover:bg-red-700 p-2 text-white   px-4 rounded">
               Archive
             </button>
           </div>

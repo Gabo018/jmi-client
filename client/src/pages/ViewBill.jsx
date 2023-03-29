@@ -26,9 +26,9 @@ export const VieBill = () => {
   const {
     data: dataBill,
     isLoading,
-    isSuccess,
+    
     isError,
-    refetch,
+  
   } = useQuery({
     queryKey: ["home-buyer-list", params],
     queryFn: userGetBill(params),
@@ -39,7 +39,7 @@ export const VieBill = () => {
   const currentYear = new Date().getFullYear() % 100;
   const currentDate = moment();
 
-  console.log(currentYear);
+
   const columns1 = [
     {
       title: "Payment Reference",
@@ -206,9 +206,11 @@ export const VieBill = () => {
             />
           </div>
           <div className="flex gap-3">
-         <button className="bg-red-600 text-white p-2 rounded-md">
+       <Link to='/archive-list'>
+       <button className="bg-red-600 text-white p-2 rounded-md">
           Archive List
          </button>
+       </Link>
             <DatePicker.RangePicker
               onChange={(e) => setDateRange(e)}
               value={dateRange}
@@ -218,6 +220,7 @@ export const VieBill = () => {
         <Row>
           <Col xl={24}>
             <Table
+            className="cursor-pointer "
               style={{ zIndex: "10000" }}
               rowKey="id"
               // rowSelection={rowSelection}

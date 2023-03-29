@@ -15,6 +15,7 @@ import { AddInventory } from './pages/AddInventory';
 import { ViewInventory } from './pages/ViewInventory';
 import { EditInventory } from './pages/EditInventory';
 import { EditBill } from './pages/EditBill';
+import ArchiveList from './pages/ArchiveList';
 
 export const DashboardRoutes = () => {
   return (
@@ -34,6 +35,7 @@ export const DashboardRoutes = () => {
         <Route path="/addInventory" element={<AddInventory />} />
         <Route path="/viewInventory" element={<ViewInventory />} />
         <Route path='/viewInventory/:id' element={<EditInventory />} />
+        <Route path='/archive-list' element={<ArchiveList />} />
       </Routes>
     </>
   )
