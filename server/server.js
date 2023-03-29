@@ -293,40 +293,19 @@ apiRouters.post("/addBill", async (req, res) => {
       status: 200,
       message: "Successfully added product",
     });
-
-    // if (name && due_date && payment_date && total_payments) {
-    //   const findPCode = await Inventory.find({ code: productCode }).count();
-    //   if (findPCode === 0) {
-    //     return res.json({
-    //       code: 404,
-    //       message: "Product Code not found.",
-    //     });
-    //   }
-    //   const inputData = await new Billing({
-    //     name,
-    //     date,
-    //     contact,
-    //     productCode,
-    //   }).save();
-    //   return res.json(inputData);
-    // }
-    // return res.status(500).json({
-    //   status: 500,
-    //   message: "name, date, contact and product code are required.",
-    // });
   } catch (err) {
     console.log(err);
   }
 });
 
-apiRouters.get("/bill/:code", async (req, res) => {
+apiRouters.get("/bill/:id", async (req, res) => {
   try {
-    const { code } = req.params;
-    const billResponse = await Inventory.find({ code });
-    if (billResponse.length === 0) {
+    const { id } = req.params;
+    const billResponse = await Billing.findById(id);
+    if (!billResponse) {
       return res.status(404).json({
         code: 404,
-        message: "Product Code not found.",
+        message: "Billing not found.",
       });
     }
     return res.json({
@@ -335,52 +314,26 @@ apiRouters.get("/bill/:code", async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({
+      message: "Internal server error",
+    });
   }
 });
 
 apiRouters.get("/bill", async (req, res) => {
   try {
     const { dTo, dFrom } = req.query;
+    const matchQuery = {};
     if (dTo && dFrom) {
-      const inputTo = new Date(dTo);
-      const inputFrom = new Date(dFrom);
-      const billResponse = await Billing.aggregate([
-        {
-          $match: {
-            date: {
-              $gte: inputFrom,
-              $lte: inputTo,
-            },
-          },
-        },
-        {
-          $lookup: {
-            from: "inventory",
-            localField: "productCode",
-            foreignField: "code",
-            as: "productInfo",
-          },
-        },
-      ]);
-      return res.json({
-        statistics: {
-          amount: billResponse.reduce(
-            (acc, val) =>
-              acc +
-              val.productInfo.reduce((sum, product) => sum + product.amount, 0),
-            0
-          ),
-          total: billResponse.length,
-          rangeDate: {
-            from: dFrom,
-            to: dTo,
-          },
-        },
-        data: billResponse,
-      });
+      matchQuery.date = {
+        $gte: new Date(dFrom),
+        $lte: new Date(dTo),
+      };
     }
-
     const billResponse = await Billing.aggregate([
+      {
+        $match: matchQuery,
+      },
       {
         $lookup: {
           from: "inventory",
@@ -399,34 +352,18 @@ apiRouters.get("/bill", async (req, res) => {
           0
         ),
         total: billResponse.length,
+        rangeDate: {
+          from: dFrom,
+          to: dTo,
+        },
       },
       data: billResponse,
     });
-  } catch (err) {
-    console.log(err);
-  }
-});
-
-apiRouters.get("/viewBill/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    console.log(id.length);
-    if (id.length === 24) {
-      const viewBillId = await Billing.find({ _id: id });
-      if (viewBillId.length === 0) {
-        return res.json({
-          code: 404,
-          message: "ID not found.",
-        });
-      }
-      return res.json(viewBillId[0]);
-    }
-    return res.json({
-      code: 404,
-      message: "ID not found.",
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: "Internal server error",
     });
-  } catch (err) {
-    console.log(err);
   }
 });
 
