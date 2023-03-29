@@ -12,113 +12,138 @@ import { Button, Space, Table, Tag, Input, Col, Row, DatePicker } from "antd";
 import { userGetBill } from "../modules/service-viewBill";
 
 export const VieBill = () => {
-  const { data: dataBill, isLoading } = useQuery({
+  const {
+    data: dataBill,
+    isLoading,
+    isSuccess,
+    isError,
+  } = useQuery({
     queryKey: "home-buyer-list",
     queryFn: userGetBill,
   });
-  console.log(dataBill);
+  const currentYear = new Date().getFullYear() % 100;
+  const currentDate = moment();
+
+  console.log(currentYear);
   const columns1 = [
     {
       title: "Payment Reference",
       dataIndex: "name",
       key: "name",
-      render: (text) => <a>{text}</a>,
+      render: (params, record, index) => {
+        return `BINV/0000${index + 1}/${currentYear}`;
+      },
     },
     {
       title: "Name",
-      dataIndex: "age",
-      key: "age",
+      dataIndex: "name",
+      key: "name",
     },
     {
       title: "Invoice Date",
-      dataIndex: "address",
-      key: "address",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text) => {
+        return <>{text == undefined ? "N/A" : moment(text).format("LL")}</>;
+      },
     },
     {
-      title: "Payment Date",
-      key: "tags",
-      dataIndex: "tags",
-      render: (_, { tags }) => (
-        <>
-          {tags.map((tag) => {
-            let color = tag.length > 5 ? "geekblue" : "green";
-            if (tag === "loser") {
-              color = "volcano";
-            }
-            return (
-              <Tag color={color} key={tag}>
-                {tag.toUpperCase()}
-              </Tag>
-            );
-          })}
-        </>
-      ),
+      title: "due_date",
+      dataIndex: "due_date",
+      key: "due_date",
+      render: (text) => {
+        const date = moment(text);
+        const isPast = date.isBefore(currentDate, 'day');
+        return (
+          <span className={isPast ? "text-red-500" : "text-black"}>{text == undefined ? "N/A " : moment(text).format("LL")}</span>
+        )
+        // const isMoreThan6MonthsPast = date.isBefore(currentDate.subtract(6, 'months'), 'day');
+        // const className = isPast ? 'text-red-500' : (isMoreThan6MonthsPast ? 'text-black' : '');
+        // return <span className={className}>{text == undefined ? 'N/A' : date.format('LL')}</span>;
+      },
     },
+    // {
+    //   title: "Payment Date",
+    //   key: "tags",
+    //   dataIndex: "tags",
+    //   render: (_, { tags }) => (
+    //     <>
+    //       {tags.map((tag) => {
+    //         let color = tag.length > 5 ? "geekblue" : "green";
+    //         if (tag === "loser") {
+    //           color = "volcano";
+    //         }
+    //         return (
+    //           <Tag color={color} key={tag}>
+    //             {tag.toUpperCase()}
+    //           </Tag>
+    //         );
+    //       })}
+    //     </>
+    //   ),
+    // },
     {
       title: "Discount",
-      dataIndex: "address",
-      key: "address",
+      dataIndex: "discount",
+      key: "discount",
+      render:(text) => (
+        <>
+        {text == undefined ? "N/A" : text}
+        </>
+      )
     },
     {
       title: "Tax Excluded",
-      dataIndex: "address",
+      dataIndex: "total_payment",
       key: "address",
+      render: (totalPayment) => {
+        const taxRate = 0.12; // 12% tax rate
+        const taxExcludedAmount = Math.round(totalPayment / (1 + taxRate));
+        const formattedAmount = taxExcludedAmount.toLocaleString();
+        return <span>₱{formattedAmount}</span>;
+      },
     },
+    
     {
       title: "Total Payment",
-      dataIndex: "address",
-      key: "address",
+      dataIndex: "total_payment",
+      key: "total_payment",
+      render:(text) => (
+      <>
+        {text == undefined ? "N/A" : `₱${text}`}
+      </>
+      )
     },
     {
       title: "Status",
-      dataIndex: "address",
+      dataIndex: "total_payment",
       key: "address",
-    },
-    {
-      title: "Status",
-      dataIndex: "address",
-      key: "address",
-    },
-    {
-      title: "Status",
-      dataIndex: "address",
-      key: "address",
-    },
-    // {
-    //   title: 'Action',
-    //   fixed: "right",
-    //   key: 'action',
-    //   render: (_, record) => (
-    //     <Space size="middle">
-    //       <a>Invite {record.name}</a>
-    //       <a>Delete</a>
-    //     </Space>
-    //   ),
-    // },
-  ];
-  const data1 = [
-    {
-      key: "1",
-      name: "John Brown",
-      age: 32,
-      address: "New York No. 1 Lake Park",
-      tags: ["nice", "developer"],
-    },
-    {
-      key: "2",
-      name: "Jim Green",
-      age: 42,
-      address: "London No. 1 Lake Park",
-      tags: ["loser"],
-    },
-    {
-      key: "3",
-      name: "Joe Black",
-      age: 32,
-      address: "Sydney No. 1 Lake Park",
-      tags: ["cool", "teacher"],
+      render: () => {
+        return <span className="text-green-600">Active</span>;
+      },
     },
   ];
+
+  if (isLoading) {
+    return <h5>Loading....</h5>;
+  }
+  if (isError) {
+    alert("Something went wrong");
+    return;
+  }
+  const data1 = dataBill.data.data;
+
+  const total = dataBill.data.statistics.total
+
+
+  const totalAmount = data1.reduce((acc, curr) => {
+    const payment = parseFloat(curr.total_payment);
+    if (!isNaN(payment)) {
+      return acc + payment;
+    } else {
+      return acc;
+    }
+  }, 0);
 
   return (
     <div
@@ -127,19 +152,20 @@ export const VieBill = () => {
         minHeight: "100vh",
       }}
     >
-     
-        <div className="pt-28 pb-10">
-          <Row gutter={24}> 
-            <Col xs={24} lg={8}>
-              Date Range
-            </Col><Col xs={24} lg={8}>
-              Total Amount
-            </Col>
-            <Col xs={24} lg={8}>
-              Total Items
-            </Col>
-          </Row>
-        </div>
+      <div className="pt-28 pb-10">
+        <Row gutter={24}>
+          <Col xs={24} lg={8} className="bg-white ">
+            <span className="font-bold text-lg">Date Range</span>
+          </Col>
+          <Col xs={24} lg={8} className="bg-white ">
+            <span className="font-bold text-lg">Total Amount: <span className="text-red-500">₱{totalAmount}</span> </span>
+          </Col>
+          <Col xs={24} lg={8} className="bg-white">
+            <span className="font-bold text-lg">Total Items: <span className="text-red-500">
+            {total}</span></span>
+          </Col>
+        </Row>
+      </div>
       <div className="pt-4 space-y-3">
         <div className="flex gap-2 justify-between items-center">
           <div className="flex gap-3">
@@ -160,7 +186,7 @@ export const VieBill = () => {
           </div>
         </div>
         <Row>
-          <Col xl={24} style={{ width: "80vw" }}>
+          <Col xl={24}>
             <Table
               style={{ zIndex: "10000" }}
               rowKey="id"
@@ -178,7 +204,7 @@ export const VieBill = () => {
                 };
               }}
               scroll={{
-                x: 3000,
+                x: 2000,
               }}
             />
           </Col>
