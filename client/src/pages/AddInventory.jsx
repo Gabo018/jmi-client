@@ -1,110 +1,108 @@
+import { Button, DatePicker, Form, Input, InputNumber, notification } from 'antd';
 import React, { useState } from 'react'
 import { Helmet } from "react-helmet";
+import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
+import { userAddProduct } from '../modules/components/service-addProduct';
 import img1 from "../pictures/jmi.jpg";
 
 export const AddInventory = () => {
-  const navigate = useNavigate();
-  const [data, setData] = useState({ date: new Date() });
-  const onChangeData = ({ target }) => {
-    const { name, value } = target;
-    setData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
-  const onClickButton = async () => {
-    const inventoryAPI = await fetch(`/api/inventory`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+  const [form] = Form.useForm();
+  const {mutate} = useMutation(userAddProduct)
+
+  const onSubmit = (values) => {
+    console.log(values)
+    mutate(values , {
+      onSuccess:() => {
+        form.resetFields()
+        notification.success({
+          message:"Success",
+          description:"Product added successfully"
+        })
       },
-      body: JSON.stringify(data)
-    });
-    const inventoryJson = await inventoryAPI.json()
-    if (inventoryJson.status === 200) {
-      alert(inventoryJson.message)
-      navigate('/viewInventory');
-    }
+      onError:() => {
+        notification.error({
+          message:"Error",
+          description:"Something went wrong"
+        })
+      }
+    })
   }
+
+
+ 
 
   return (
-    <div className="pl-80 pr-28 bg-gradient-to-r from-indigo-900 via-violet-500 to-indigo-400 h-screen">
-      <Helmet>
-        <title>Add Inventory</title>
-        <meta name="addInventory" content="This is the Inventory Section" />
-      </Helmet>
-      <div className="border-b-2 pb-4">
-        <h1 className="text-center text-white text-5xl font-bold">
-          Add Inventory
-        </h1>
-      </div>
-      <div className=" bg-white rounded-md shadow-lg mt-8 p-5">
-        <div className="flex justify-between gap-10">
-          <div className=" leading-8 ">
-            <label
-              htmlFor="code"
-              className="form-label inline-block mb-2 text-gray-700 font-bold"
-            >
-              Code:
-            </label>
-            <input
-              name='code'
-              type="text"
-              id="code"
-              placeholder="Code"
-              maxLength={10}
-              required
-              className="input  border border-solid border-gray-300"
-              onChange={onChangeData}
-            />
-
-            <label
-              htmlFor="description"
-              className="form-label inline-block mb-2 text-gray-700 font-bold"
-            >
-              Description:
-            </label>
-            <input
-              name='description'
-              type="text"
-              id="description"
-              placeholder="Description"
-              required
-              className=" input  border border-solid border-gray-300"
-              onChange={onChangeData}
-            />
-
-            <label
-              htmlFor="amount"
-              className="form-label inline-block mb-2 text-gray-700 font-bold"
-            >
-              Amount:
-            </label>
-            <input
-              name='amount'
-              type="number"
-              id="amount"
-              placeholder="Amount"
-              required
-              className="input  border border-solid border-gray-300 "
-              onChange={onChangeData}
-            />
-            <button
-              type="submit"
-              className="bg-violet-600 mt-4 rounded-md shadow-lg p-4 hover: text-white hover:bg-violet-700"
-              onClick={onClickButton}
-            >
-              Add Inventory
-            </button>
-          </div>
-          <div>
-            <img src={img1} className="h-full w-96" />
-          </div>
-        </div>
-
-      </div>
+    <div className="flex flex-col justify-center items-center pl-80 pr-28 bg-gray-200 h-screen">
+    <div className="py-5">
+      <h5 className="font-bold text-2xl">Add Product</h5>
     </div>
+    <Form
+      className="position-relative overflow-y-auto bg-gray-200 max-h-[600px] p-4"
+      name="login"
+      initialValues={{
+        remember: true,
+      }}
+      labelCol={{
+        span: 24,
+      }}
+      form={form}
+      onFinish={onSubmit}
+      autoComplete="off"
+    >
+      <Form.Item
+        label="Name of product"
+        name="name"
+        rules={[
+          {
+            required: true,
+            message: "Please input valid Name!",
+          },
+        ]}
+      >
+        <Input size="large" />
+      </Form.Item>
+
+      <Form.Item
+        label="Quantity"
+        name="quantity"
+        rules={[
+          {
+            required: true,
+            message: "Please input your quantity!",
+          },
+        ]}
+      >
+      <InputNumber size='large' style={{ width: '100%' }} />
+      </Form.Item>
+
+     
+
+      <Form.Item
+        label="Price"
+        name="price"
+        rules={[
+          {
+            required: true,
+            message: "Please input your price!",
+          },
+        ]}
+      >
+           <InputNumber size='large' style={{ width: '100%' }} />
+      </Form.Item>
+
+      <Form.Item className="text-center bottom-0 ">
+        {" "}
+        <>
+          <Button
+            htmlType={"submit"}
+            className="btn bg-blue-500 text-white btn-outline-light btn-lg w-75  rounded-lg "
+          >
+            Submit
+          </Button>
+        </>
+      </Form.Item>
+    </Form>
+  </div>
   )
 }
