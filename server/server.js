@@ -3,145 +3,158 @@ const express = require("express");
 const mongoose = require("mongoose");
 const Billing = require("./models/BillingModel");
 const Expenses = require("./models/ExpensesModel");
-const Admin = require('./models/AdminModel.js');
-const Inventory = require('./models/InventoryModel.js');
+const Admin = require("./models/AdminModel.js");
+const Inventory = require("./models/InventoryModel.js");
 const app = express();
 const cors = require("cors");
 const path = require("path");
-const morgan = require('morgan');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const nodemailer = require('nodemailer');
-
+const morgan = require("morgan");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
 
 // Middleware
-app.use(morgan('dev'));
-app.use(express.urlencoded({ extended: false }))
+app.use(morgan("dev"));
+app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(cors({
-  origin: '*'
-}));
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 const apiRouters = express.Router();
-app.use('/api', apiRouters)
+app.use("/api", apiRouters);
 
 // System Authentication
 function authToken(req, res, next) {
-  const authHeader = req.headers['authorization']
-  const token = authHeader && authHeader.split(' ')[1]
-  if (token == null) return res.sendStatus(401)
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (token == null) return res.sendStatus(401);
   jwt.verify(token, process.env.JWT_SECRET_KEY, (err, user) => {
-    if (err) return res.sendStatus(401)
+    if (err) return res.sendStatus(401);
     req.user = user;
     next();
-  })
+  });
 }
 
 // Start Authentication Routers
-apiRouters.get('/protected', authToken, async (req, res) => {
+apiRouters.get("/protected", authToken, async (req, res) => {
   try {
     res.json(req.user);
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 // End Authentication Routers
 
 // Start Login System Routers
 
-apiRouters.post('/login', async (req, res) => {
+apiRouters.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (email, password) {
-
+    if ((email, password)) {
       if (email.length === 24) {
-        const checkUsername = await Admin.findOne({ _id: email })
+        const checkUsername = await Admin.findOne({ _id: email });
         if (checkUsername) {
-          const checkPassword = await bcrypt.compare(password, checkUsername.password)
+          const checkPassword = await bcrypt.compare(
+            password,
+            checkUsername.password
+          );
           if (checkPassword) {
             const { _id, email } = checkUsername;
-            const token = jwt.sign({ _id, email }, process.env.JWT_SECRET_KEY, { expiresIn: 60 * 60 });
-            return res.json({ token })
+            const token = jwt.sign({ _id, email }, process.env.JWT_SECRET_KEY, {
+              expiresIn: 60 * 60,
+            });
+            return res.json({ token });
           } else {
             return res.status(404).json({
               status: 404,
-              message: 'Email & Password does not exist.'
-            })
+              message: "Email & Password does not exist.",
+            });
           }
         } else {
           return res.status(404).json({
             status: 404,
-            message: 'Email not found.'
-          })
+            message: "Email not found.",
+          });
         }
       } else {
-        const checkUsername = await Admin.findOne({ email })
+        const checkUsername = await Admin.findOne({ email });
         if (checkUsername) {
-          const checkPassword = await bcrypt.compare(password, checkUsername.password)
+          const checkPassword = await bcrypt.compare(
+            password,
+            checkUsername.password
+          );
           if (checkPassword) {
             const { _id, email, name } = checkUsername;
-            const token = jwt.sign({ _id, email, name }, process.env.JWT_SECRET_KEY, { expiresIn: 60 * 60 });
-            return res.json({ token })
+            const token = jwt.sign(
+              { _id, email, name },
+              process.env.JWT_SECRET_KEY,
+              { expiresIn: 60 * 60 }
+            );
+            return res.json({ token });
           } else {
             return res.status(404).json({
               status: 404,
-              message: 'Email & Password does not exist.'
-            })
+              message: "Email & Password does not exist.",
+            });
           }
         } else {
           return res.status(404).json({
             status: 404,
-            message: 'Email not found.'
-          })
+            message: "Email not found.",
+          });
         }
       }
-
     } else {
       return res.status(204).json({
         code: 204,
-        message: 'Username & Password are required.'
-      })
+        message: "Username & Password are required.",
+      });
     }
   } catch (err) {
-    console.log(err.message)
+    console.log(err.message);
   }
-})
+});
 
-apiRouters.post('/register', async (req, res) => {
+apiRouters.post("/register", async (req, res) => {
   try {
     const { email, password, name } = req.body;
-    const addData = new Admin({ email, password, name })
+    const addData = new Admin({ email, password, name });
     const saveAdmin = await addData.save();
     res.json({
       status: 200,
-      message: 'Admin User Registered Successfully.'
-    })
+      message: "Admin User Registered Successfully.",
+    });
   } catch (err) {
     if (err.code === 11000) {
       res.json({
         status: 11000,
-        message: 'Email & Password has been taken.'
-      })
+        message: "Email & Password has been taken.",
+      });
     }
   }
-})
+});
 
-apiRouters.post('/forgot', async (req, res) => {
+apiRouters.post("/forgot", async (req, res) => {
   try {
     const { email } = req.body;
     const transporter = await nodemailer.createTransport({
-      service: 'gmail',
+      service: "gmail",
       auth: {
         user: process.env.GMAIL_EMAIL,
-        pass: process.env.GMAIL_PASSWORD
-      }
+        pass: process.env.GMAIL_PASSWORD,
+      },
     });
 
-    const forgotToken = jwt.sign({ email }, process.env.JWT_SECRET_FORGOT, { expiresIn: '10m' });
+    const forgotToken = jwt.sign({ email }, process.env.JWT_SECRET_FORGOT, {
+      expiresIn: "10m",
+    });
 
     const option = {
-      from: 'JMI <gabrielryans.fifibuy@gmail.com>',
+      from: "JMI <gabrielryans.fifibuy@gmail.com>",
       to: email,
-      subject: 'Password Reset Request | JMI',
+      subject: "Password Reset Request | JMI",
       html: `<div>
               Dear ${email},
               <br>
@@ -151,7 +164,9 @@ apiRouters.post('/forgot', async (req, res) => {
               We have received a request to reset the password for your account.To set a new password, please click on the following link:
               <br>
               <br>
-              <a href='http://${process.env.CLIENT_DOMAIN + '/new-password?token=' + forgotToken}'>Reset Password Link</a>
+              <a href='http://${
+                process.env.CLIENT_DOMAIN + "/new-password?token=" + forgotToken
+              }'>Reset Password Link</a>
               <br>
               <br>
 
@@ -175,128 +190,155 @@ apiRouters.post('/forgot', async (req, res) => {
             </div >
       `,
       headers: {
-        'priority': 'high',
-        'importance': 'high'
-      }
-    }
-    const transEmail = await transporter.sendMail(option)
+        priority: "high",
+        importance: "high",
+      },
+    };
+    const transEmail = await transporter.sendMail(option);
 
-
-    res.json({ code: 200, message: 'Reset link has been sent.' })
-
+    res.json({ code: 200, message: "Reset link has been sent." });
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
 });
 
-apiRouters.put('/new-password/:token', async (req, res) => {
+apiRouters.put("/new-password/:token", async (req, res) => {
   try {
     const { token } = req.params;
     const { password, confirmPassword } = await req.body;
     if (password === confirmPassword && password && confirmPassword && token) {
       const user = jwt.verify(token, process.env.JWT_SECRET_FORGOT);
-      const encryptPass = bcrypt.hashSync(password, 12)
-      const updatePassword = await Admin.updateOne({ email: user.email }, { password: encryptPass });
-      return res.json({ code: 200, message: 'Password Successfully Updated!' });
+      const encryptPass = bcrypt.hashSync(password, 12);
+      const updatePassword = await Admin.updateOne(
+        { email: user.email },
+        { password: encryptPass }
+      );
+      return res.json({ code: 200, message: "Password Successfully Updated!" });
     }
     return res.json({
       code: 500,
-      message: 'Password are not properly setup, please try again.'
-    })
-
+      message: "Password are not properly setup, please try again.",
+    });
   } catch (err) {
     return res.status(403).json({
       code: 403,
-      message: 'Token has been expired, please request another.'
+      message: "Token has been expired, please request another.",
     });
   }
-})
+});
 // End Login System Routers
 
 // Start Home
-apiRouters.get('/homeData', authToken, async (req, res) => {
+apiRouters.get("/homeData", authToken, async (req, res) => {
   try {
-    const inventoryCount = await Inventory.find({}).count()
+    const inventoryCount = await Inventory.find({}).count();
     const billingCount = await Billing.find({}).count();
 
     const billResponse = await Billing.aggregate([
       {
         $lookup: {
-          from: 'inventory',
-          localField: 'productCode',
-          foreignField: 'code',
-          as: 'productInfo'
-        }
-      }]
-    )
-    const billSales = billResponse.reduce((acc, val) => acc + val.productInfo.reduce((sum, product) => sum + product.amount, 0), 0)
+          from: "inventory",
+          localField: "productCode",
+          foreignField: "code",
+          as: "productInfo",
+        },
+      },
+    ]);
+    const billSales = billResponse.reduce(
+      (acc, val) =>
+        acc + val.productInfo.reduce((sum, product) => sum + product.amount, 0),
+      0
+    );
 
     const expensesLoss = await Expenses.aggregate([
       {
         $group: {
           _id: null,
-          totalAmount: { $sum: "$amount" }
-        }
-      }
+          totalAmount: { $sum: "$amount" },
+        },
+      },
     ]);
     res.json({
       inventoryTotalItem: inventoryCount - billingCount,
       totalExpenses: expensesLoss[0].totalAmount,
       totalSales: billSales,
-    })
+    });
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 
 // End Home
 
 // Start Bill Routers
-apiRouters.post('/addBill', async (req, res) => {
+apiRouters.post("/addBill", async (req, res) => {
   try {
-    const { name, date, contact, productCode } = req.body;
-    if (name && date && contact && productCode) {
-      const findPCode = await Inventory.find({ code: productCode }).count()
-      if (findPCode === 0) {
-        return res.json({
-          code: 404,
-          message: 'Product Code not found.'
-        })
-      }
-      const inputData = await new Billing({ name, date, contact, productCode }).save()
-      return res.json(inputData)
+    const { name, due_date, payment_date, total_payment } = req.body;
+    if (!name || !due_date || !payment_date || !total_payment) {
+      return res.status(500).json({
+        status: 500,
+        message: "Missing fields are required!",
+      });
     }
-    return res.status(500).json({
-      status: 500,
-      message: 'name, date, contact and product code are required.'
-    })
+    const newBilling = await new Billing({
+      name,
+      due_date,
+      payment_date,
+      total_payment,
+    });
 
+    newBilling.save();
 
+    return res.status(200).json({
+      status: 200,
+      message: "Successfully added product",
+    });
+
+    // if (name && due_date && payment_date && total_payments) {
+    //   const findPCode = await Inventory.find({ code: productCode }).count();
+    //   if (findPCode === 0) {
+    //     return res.json({
+    //       code: 404,
+    //       message: "Product Code not found.",
+    //     });
+    //   }
+    //   const inputData = await new Billing({
+    //     name,
+    //     date,
+    //     contact,
+    //     productCode,
+    //   }).save();
+    //   return res.json(inputData);
+    // }
+    // return res.status(500).json({
+    //   status: 500,
+    //   message: "name, date, contact and product code are required.",
+    // });
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 
-apiRouters.get('/bill/:code', async (req, res) => {
+apiRouters.get("/bill/:code", async (req, res) => {
   try {
     const { code } = req.params;
-    const billResponse = await Inventory.find({ code })
+    const billResponse = await Inventory.find({ code });
     if (billResponse.length === 0) {
       return res.status(404).json({
         code: 404,
-        message: 'Product Code not found.'
-      })
+        message: "Product Code not found.",
+      });
     }
     return res.json({
       code: 200,
-      data: billResponse
-    })
+      data: billResponse,
+    });
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 
-apiRouters.get('/bill', async (req, res) => {
+apiRouters.get("/bill", async (req, res) => {
   try {
     const { dTo, dFrom } = req.query;
     if (dTo && dFrom) {
@@ -307,125 +349,141 @@ apiRouters.get('/bill', async (req, res) => {
           $match: {
             date: {
               $gte: inputFrom,
-              $lte: inputTo
-            }
+              $lte: inputTo,
+            },
           },
         },
         {
           $lookup: {
-            from: 'inventory',
-            localField: 'productCode',
-            foreignField: 'code',
-            as: 'productInfo'
-          }
-        }])
+            from: "inventory",
+            localField: "productCode",
+            foreignField: "code",
+            as: "productInfo",
+          },
+        },
+      ]);
       return res.json({
         statistics: {
-          amount: billResponse.reduce((acc, val) => acc + val.productInfo.reduce((sum, product) => sum + product.amount, 0), 0),
+          amount: billResponse.reduce(
+            (acc, val) =>
+              acc +
+              val.productInfo.reduce((sum, product) => sum + product.amount, 0),
+            0
+          ),
           total: billResponse.length,
           rangeDate: {
             from: dFrom,
-            to: dTo
-          }
+            to: dTo,
+          },
         },
-        data: billResponse
-      })
+        data: billResponse,
+      });
     }
-
-
 
     const billResponse = await Billing.aggregate([
       {
         $lookup: {
-          from: 'inventory',
-          localField: 'productCode',
-          foreignField: 'code',
-          as: 'productInfo'
-        }
-      }])
+          from: "inventory",
+          localField: "productCode",
+          foreignField: "code",
+          as: "productInfo",
+        },
+      },
+    ]);
     return res.json({
       statistics: {
-        amount: billResponse.reduce((acc, val) => acc + val.productInfo.reduce((sum, product) => sum + product.amount, 0), 0),
+        amount: billResponse.reduce(
+          (acc, val) =>
+            acc +
+            val.productInfo.reduce((sum, product) => sum + product.amount, 0),
+          0
+        ),
         total: billResponse.length,
       },
-      data: billResponse
-    })
-
+      data: billResponse,
+    });
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 
-apiRouters.get('/viewBill/:id', async (req, res) => {
+apiRouters.get("/viewBill/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id.length)
+    console.log(id.length);
     if (id.length === 24) {
-      const viewBillId = await Billing.find({ _id: id })
+      const viewBillId = await Billing.find({ _id: id });
       if (viewBillId.length === 0) {
         return res.json({
           code: 404,
-          message: 'ID not found.'
-        })
+          message: "ID not found.",
+        });
       }
-      return res.json(viewBillId[0])
+      return res.json(viewBillId[0]);
     }
     return res.json({
       code: 404,
-      message: 'ID not found.'
+      message: "ID not found.",
     });
-
-
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 
-apiRouters.put('/viewBill/:id', async (req, res) => {
+apiRouters.put("/viewBill/:id", async (req, res) => {
   try {
     const { name, date, contact } = req.body;
     const { id } = req.params;
-    const updateBIlling = await Billing.update({ _id: id }, { name, date, contact })
-    res.json(updateBIlling)
+    const updateBIlling = await Billing.update(
+      { _id: id },
+      { name, date, contact }
+    );
+    res.json(updateBIlling);
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 
-apiRouters.delete('/bill/:id', async (req, res) => {
+apiRouters.delete("/bill/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const deleteBill = await Billing.deleteOne({ _id: id })
-    res.json(deleteBill)
+    const deleteBill = await Billing.deleteOne({ _id: id });
+    res.json(deleteBill);
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 // End Bill Routers
 
 // Start Expenses Routers
-apiRouters.post('/expenses', authToken, async (req, res) => {
+apiRouters.post("/expenses", authToken, async (req, res) => {
   // const data = req.body;
   try {
     const { deductionType, description, amount, date } = req.body;
     const { name } = req.user;
     if (deductionType && description && amount && date) {
-      const addExpenses = await new Expenses({ deductionType, description, amount, date, processBy: name }).save();
+      const addExpenses = await new Expenses({
+        deductionType,
+        description,
+        amount,
+        date,
+        processBy: name,
+      }).save();
       return res.json({
         code: 200,
-        message: 'Expenses Added Successfully.'
-      })
+        message: "Expenses Added Successfully.",
+      });
     }
     return res.status(400).json({
       code: 400,
-      message: 'Expenses Added Successfully.'
-    })
+      message: "Expenses Added Successfully.",
+    });
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 
-apiRouters.get('/expenses', async (req, res) => {
+apiRouters.get("/expenses", async (req, res) => {
   try {
     const { dFrom, dTo } = req.query;
     if (dFrom && dTo) {
@@ -434,90 +492,92 @@ apiRouters.get('/expenses', async (req, res) => {
       const retrieveExpenses = await Expenses.find({
         date: {
           $gte: inputFrom,
-          $lte: inputTo.setDate(inputTo.getDate() + 1)
-        }
-      })
+          $lte: inputTo.setDate(inputTo.getDate() + 1),
+        },
+      });
       return res.json({
         statistics: {
           amount: retrieveExpenses.reduce((acc, val) => acc + val.amount, 0),
           total: retrieveExpenses.length,
           rangeDate: {
             from: dFrom,
-            to: dTo
-          }
+            to: dTo,
+          },
         },
-        data: retrieveExpenses
-      })
+        data: retrieveExpenses,
+      });
     }
-
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 
-apiRouters.get('/expenses/:id', authToken, async (req, res) => {
+apiRouters.get("/expenses/:id", authToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const retrieveExpenses = await Expenses.findOne({ _id: id })
-    res.json(retrieveExpenses)
+    const retrieveExpenses = await Expenses.findOne({ _id: id });
+    res.json(retrieveExpenses);
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 
-apiRouters.put('/expenses/:id', authToken, async (req, res) => {
+apiRouters.put("/expenses/:id", authToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { deductionType, description, amount, date } = req.body;
-    const updateExpenses = await Expenses.update({ _id: id }, { deductionType, description, amount, date })
+    const updateExpenses = await Expenses.update(
+      { _id: id },
+      { deductionType, description, amount, date }
+    );
     res.json({
       code: 200,
-      message: 'Updated Successfully.'
-    })
+      message: "Updated Successfully.",
+    });
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 
-apiRouters.delete('/expenses/:id', authToken, async (req, res) => {
+apiRouters.delete("/expenses/:id", authToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const deleteExpenses = await Expenses.deleteOne({ _id: id })
+    const deleteExpenses = await Expenses.deleteOne({ _id: id });
     res.json({
       code: 200,
-      message: 'Deleted Successfully.'
-    })
+      message: "Deleted Successfully.",
+    });
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 // End Expenses Routers
 
 // Start Balance Sheet Routers
-apiRouters.get('/sales', async (req, res) => {
+apiRouters.get("/sales", async (req, res) => {
   try {
     const data = await Billing.aggregate([
       {
         $lookup: {
-          from: 'inventory',
-          localField: 'productCode',
-          foreignField: 'code',
-          as: 'product'
-        }
+          from: "inventory",
+          localField: "productCode",
+          foreignField: "code",
+          as: "product",
+        },
       },
       {
-        $unwind: "$product"
+        $unwind: "$product",
       },
       {
         $group: {
           _id: {
             month: { $month: "$date" },
-            year: { $year: "$date" }
+            year: { $year: "$date" },
           },
           totalSales: {
-            $sum: "$product.amount"
-          }
-        }
+            $sum: "$product.amount",
+          },
+        },
       },
       {
         $project: {
@@ -538,33 +598,30 @@ apiRouters.get('/sales', async (req, res) => {
                   "September",
                   "October",
                   "November",
-                  "December"
-                ]
+                  "December",
+                ],
               },
               in: {
                 $arrayElemAt: [
                   "$$monthsInYear",
-                  { $subtract: ["$_id.month", 1] }
-                ]
-              }
-            }
+                  { $subtract: ["$_id.month", 1] },
+                ],
+              },
+            },
           },
-          year: "$_id.year"
-        }
-      }
+          year: "$_id.year",
+        },
+      },
     ]);
-
 
     res.json({
       success: true,
-      data: data
-    })
+      data: data,
+    });
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
-
-
+});
 
 apiRouters.get("/loss", async (req, res) => {
   const ExpenseLoss = await Expenses.aggregate(
@@ -625,36 +682,35 @@ apiRouters.get("/loss", async (req, res) => {
 });
 
 apiRouters.get("/netProfit", async (req, res) => {
-
   const totalSale = await Billing.aggregate([
     {
       $lookup: {
-        from: 'inventory',
-        localField: 'productCode',
-        foreignField: 'code',
-        as: 'product'
-      }
+        from: "inventory",
+        localField: "productCode",
+        foreignField: "code",
+        as: "product",
+      },
     },
     {
-      $unwind: "$product"
+      $unwind: "$product",
     },
     {
       $group: {
         _id: {
-          Year: { $year: "$date" }
+          Year: { $year: "$date" },
         },
         totalSales: {
-          $sum: "$product.amount"
-        }
-      }
+          $sum: "$product.amount",
+        },
+      },
     },
     {
       $project: {
         _id: "$_id",
         Sales: "$totalSales",
         // year: "$_id"
-      }
-    }
+      },
+    },
   ]);
 
   const totalExpense = await Expenses.aggregate(
@@ -693,42 +749,42 @@ apiRouters.get("/netProfit", async (req, res) => {
 // End Balance Sheet Routers
 
 // Start Inventory Routers
-apiRouters.post('/inventory', authToken, async (req, res) => {
+apiRouters.post("/inventory", authToken, async (req, res) => {
   try {
     const { code, description, amount, date } = req.body;
-    let vat = parseInt(amount) * .12
+    let vat = parseInt(amount) * 0.12;
     const addInventory = await new Inventory({
       code,
       description,
       amount: parseInt(amount) + vat,
-      date
+      date,
     }).save();
     res.status(200).json({
       status: 200,
-      message: 'Product created successfully.'
-    })
+      message: "Product created successfully.",
+    });
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 
-apiRouters.get('/inventory', authToken, async (req, res) => {
+apiRouters.get("/inventory", authToken, async (req, res) => {
   try {
     const { dTo, dFrom } = req.query;
     if (dTo && dFrom) {
       const inputTo = new Date(dTo);
       const inputFrom = new Date(dFrom);
-      const productCodes = await Billing.distinct('productCode');
+      const productCodes = await Billing.distinct("productCode");
       const retrieveDate = await Inventory.aggregate([
         {
           $match: {
             date: {
               $gte: inputFrom,
-              $lte: inputTo
+              $lte: inputTo,
             },
-            code: { $nin: productCodes }
-          }
-        }
+            code: { $nin: productCodes },
+          },
+        },
       ]);
 
       return res.json({
@@ -737,15 +793,15 @@ apiRouters.get('/inventory', authToken, async (req, res) => {
           total: retrieveDate.length,
           rangeDate: {
             from: dFrom,
-            to: dTo
-          }
+            to: dTo,
+          },
         },
-        data: retrieveDate
+        data: retrieveDate,
       });
     }
 
     const productCodes = await Billing.distinct("productCode");
-    const retrieveData = await Inventory.find({ "code": { $nin: productCodes } });
+    const retrieveData = await Inventory.find({ code: { $nin: productCodes } });
     return res.json({
       statistics: {
         amount: retrieveData.reduce((acc, val) => acc + val.amount, 0),
@@ -753,51 +809,51 @@ apiRouters.get('/inventory', authToken, async (req, res) => {
       },
       data: retrieveData,
     });
-
-
-
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 
-apiRouters.get('/inventory/:id', authToken, async (req, res) => {
+apiRouters.get("/inventory/:id", authToken, async (req, res) => {
   try {
-    const { id } = req.params
-    const getInventory = await Inventory.findOne({ _id: id })
-    res.json(getInventory)
+    const { id } = req.params;
+    const getInventory = await Inventory.findOne({ _id: id });
+    res.json(getInventory);
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 
-apiRouters.put('/inventory/:id', authToken, async (req, res) => {
+apiRouters.put("/inventory/:id", authToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { code, description, amount, date } = req.body;
-    const updateData = await Inventory.update({
-      _id: id
-    }, {
-      $set: { code, description, amount, date }
-    });
-    res.json(updateData)
+    const updateData = await Inventory.update(
+      {
+        _id: id,
+      },
+      {
+        $set: { code, description, amount, date },
+      }
+    );
+    res.json(updateData);
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
-})
+});
 
-apiRouters.delete('/inventory/:id', authToken, async (req, res) => {
+apiRouters.delete("/inventory/:id", authToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const deleteData = await Inventory.deleteOne({ _id: id })
-    res.json(deleteData)
+    const deleteData = await Inventory.deleteOne({ _id: id });
+    res.json(deleteData);
   } catch (err) {
-    console.log()
+    console.log();
   }
-})
+});
 // End Inventory Routers
 
-mongoose.set('strictQuery', true)
+mongoose.set("strictQuery", true);
 mongoose
   .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
