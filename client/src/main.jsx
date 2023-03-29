@@ -9,7 +9,11 @@ import {
   QueryClientProvider,
 } from 'react-query'
 import 'antd/dist/antd.css';
+
+
 const queryClient = new QueryClient()
+
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
