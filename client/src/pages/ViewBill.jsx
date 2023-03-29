@@ -12,15 +12,28 @@ import { Button, Space, Table, Tag, Input, Col, Row, DatePicker } from "antd";
 import { userGetBill } from "../modules/service-viewBill";
 
 export const VieBill = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dateRange, setDateRange] = useState();
+
+  const firstDateRange = dateRange && dateRange.length === 2 && moment(dateRange[0], "YYYY-MM-DD").isValid() ? Object.values(dateRange)[0] : null;
+  const secondDateRange = dateRange && dateRange.length === 2 && moment(dateRange[1], "YYYY-MM-DD").isValid() ? Object.values(dateRange)[1] : moment();
+  
+  const params = {
+    dFrom: firstDateRange ? moment(firstDateRange).format("YYYY-MM-DD") : null,
+    dTo: secondDateRange ? moment(secondDateRange).format("YYYY-MM-DD") : null,
+  };
+  
   const {
     data: dataBill,
     isLoading,
     isSuccess,
     isError,
+    refetch,
   } = useQuery({
-    queryKey: "home-buyer-list",
-    queryFn: userGetBill,
+    queryKey: ["home-buyer-list", params],
+    queryFn: userGetBill(params),
   });
+
   const currentYear = new Date().getFullYear() % 100;
   const currentDate = moment();
 
@@ -53,13 +66,12 @@ export const VieBill = () => {
       key: "due_date",
       render: (text) => {
         const date = moment(text);
-        const isPast = date.isBefore(currentDate, 'day');
+        const isPast = date.isBefore(currentDate, "day");
         return (
-          <span className={isPast ? "text-red-500" : "text-black"}>{text == undefined ? "N/A " : moment(text).format("LL")}</span>
-        )
-        // const isMoreThan6MonthsPast = date.isBefore(currentDate.subtract(6, 'months'), 'day');
-        // const className = isPast ? 'text-red-500' : (isMoreThan6MonthsPast ? 'text-black' : '');
-        // return <span className={className}>{text == undefined ? 'N/A' : date.format('LL')}</span>;
+          <span className={isPast ? "text-red-500" : "text-black"}>
+            {text == undefined ? "N/A " : moment(text).format("LL")}
+          </span>
+        );
       },
     },
     // {
@@ -86,11 +98,7 @@ export const VieBill = () => {
       title: "Discount",
       dataIndex: "discount",
       key: "discount",
-      render:(text) => (
-        <>
-        {text == undefined ? "N/A" : text}
-        </>
-      )
+      render: (text) => <>{text == undefined ? "N/A" : text}</>,
     },
     {
       title: "Tax Excluded",
@@ -103,16 +111,12 @@ export const VieBill = () => {
         return <span>₱{formattedAmount}</span>;
       },
     },
-    
+
     {
       title: "Total Payment",
       dataIndex: "total_payment",
       key: "total_payment",
-      render:(text) => (
-      <>
-        {text == undefined ? "N/A" : `₱${text}`}
-      </>
-      )
+      render: (text) => <>{text == undefined ? "N/A" : `₱${text}`}</>,
     },
     {
       title: "Status",
@@ -133,8 +137,7 @@ export const VieBill = () => {
   }
   const data1 = dataBill.data.data;
 
-  const total = dataBill.data.statistics.total
-
+  const total = dataBill.data.statistics.total;
 
   const totalAmount = data1.reduce((acc, curr) => {
     const payment = parseFloat(curr.total_payment);
@@ -145,6 +148,15 @@ export const VieBill = () => {
     }
   }, 0);
 
+  const sortedDataSource = data1.sort((a, b) => {
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+  const filteredData = sortedDataSource.filter((record) => record.name === searchTerm);
+
+  
+
+  console.log("this is the filtered data", filteredData);
+
   return (
     <div
       className="pl-80 pr-28  bg-gray-200 pb-20"
@@ -152,17 +164,25 @@ export const VieBill = () => {
         minHeight: "100vh",
       }}
     >
+      {console.log(dateRange)}
       <div className="pt-28 pb-10">
         <Row gutter={24}>
           <Col xs={24} lg={8} className="bg-white ">
-            <span className="font-bold text-lg">Date Range</span>
+            <span className="font-bold text-lg">
+              Date Range:
+            {  firstDateRange || secondDateRange ? "N/A" : `${moment(firstDateRange).format("LL")} - ${moment(secondDateRange).format("LL")} `}
+             
+            </span>
           </Col>
           <Col xs={24} lg={8} className="bg-white ">
-            <span className="font-bold text-lg">Total Amount: <span className="text-red-500">₱{totalAmount}</span> </span>
+            <span className="font-bold text-lg">
+              Total Amount: <span className="text-red-500">₱{totalAmount}</span>{" "}
+            </span>
           </Col>
           <Col xs={24} lg={8} className="bg-white">
-            <span className="font-bold text-lg">Total Items: <span className="text-red-500">
-            {total}</span></span>
+            <span className="font-bold text-lg">
+              Total Items: <span className="text-red-500">{total}</span>
+            </span>
           </Col>
         </Row>
       </div>
@@ -178,11 +198,14 @@ export const VieBill = () => {
               defaultValue={""}
               allowClear
               placeholder="Search for name, contact, email and developer"
-              onSearch={""}
+              onSearch={(e) => setSearchTerm(e)}
             />
           </div>
           <div className="flex gap-3">
-            <DatePicker.RangePicker />
+            <DatePicker.RangePicker
+              onChange={(e) => setDateRange(e)}
+              value={dateRange}
+            />
           </div>
         </div>
         <Row>
@@ -192,7 +215,7 @@ export const VieBill = () => {
               rowKey="id"
               // rowSelection={rowSelection}
               columns={columns1}
-              dataSource={data1}
+              dataSource={searchTerm ? filteredData : sortedDataSource}
               pagination={{
                 position: ["bottomCenter"],
               }}
