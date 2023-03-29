@@ -287,7 +287,7 @@ export const VieBill = () => {
   }, [ref, setShowPicker, rangeDate, deleteState]);
 
   return (
-    <div className="pl-80 pr-28 bg-gradient-to-r from-indigo-900 via-violet-500 to-indigo-400 pb-20"
+    <div className="pl-80 pr-28  bg-gray-400 pb-20"
       style={{
         minHeight: '100vh'
       }}

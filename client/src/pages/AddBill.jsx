@@ -67,7 +67,7 @@ export const AddBill = () => {
         <h5 className="font-bold text-2xl">Add Bill</h5>
       </div>
       <Form
-        className="position-relative overflow-y-scroll"
+        className="position-relative overflow-y-scroll bg-gray-200 max-h-[550px] p-4"
         name="login"
         initialValues={{
           remember: true,
@@ -106,7 +106,7 @@ export const AddBill = () => {
             },
           ]}
         >
-         <DatePicker className="w-full"/>
+         <DatePicker className="w-full" size="large"/>
         </Form.Item>
        
         <Form.Item
@@ -119,14 +119,26 @@ export const AddBill = () => {
             },
           ]}
         >
-         <Input className="w-full"/>
+         <Input className="w-full" size="large"/>
+        </Form.Item>
+       
+        
+        <Form.Item
+          label="Payment Date"
+          name="payment_date"
+          rules={[
+            {
+              required: true,
+              message: "Please input your  Payment Date!",
+            },
+          ]}
+        >
+        <DatePicker className="w-full" size="large"/>
         </Form.Item>
        
 
 
-        <div className="d-flex justify-content-between align-items-center mb-2 mt-3">
-          <Checkbox>Remember me</Checkbox>
-        </div>
+        
 
         <Form.Item className="text-center bottom-0 ">
           {" "}
