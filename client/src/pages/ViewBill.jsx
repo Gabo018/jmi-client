@@ -7,8 +7,104 @@ import moment from 'moment'
 import { DateRangePicker } from 'react-date-range'
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
+import { Button, Space, Table, Tag ,  Input } from 'antd';
+
+
 
 export const VieBill = () => {
+const columns1 = [
+  {
+    title: 'Payment Reference',
+    dataIndex: 'name',
+    key: 'name',
+    render: (text) => <a>{text}</a>,
+  },
+  {
+    title: 'Name',
+    dataIndex: 'age',
+    key: 'age',
+  },
+  {
+    title: 'Invoice Date',
+    dataIndex: 'address',
+    key: 'address',
+  },
+  {
+    title: 'Payment Date',
+    key: 'tags',
+    dataIndex: 'tags',
+    render: (_, { tags }) => (
+      <>
+        {tags.map((tag) => {
+          let color = tag.length > 5 ? 'geekblue' : 'green';
+          if (tag === 'loser') {
+            color = 'volcano';
+          }
+          return (
+            <Tag color={color} key={tag}>
+              {tag.toUpperCase()}
+            </Tag>
+          );
+        })}
+      </>
+    ),
+  },
+  {
+    title: 'Discount',
+    dataIndex: 'address',
+    key: 'address',
+
+  },
+  {
+    title: 'Tax Excluded',
+    dataIndex: 'address',
+    key: 'address',
+  },
+  {
+    title: 'Total Payment',
+    dataIndex: 'address',
+    key: 'address',
+  },
+  {
+    title: 'Status',
+    dataIndex: 'address',
+    key: 'address',
+  },
+  {
+    title: 'Action',
+    key: 'action',
+    render: (_, record) => (
+      <Space size="middle">
+        <a>Invite {record.name}</a>
+        <a>Delete</a>
+      </Space>
+    ),
+  },
+];
+const data1 = [
+  {
+    key: '1',
+    name: 'John Brown',
+    age: 32,
+    address: 'New York No. 1 Lake Park',
+    tags: ['nice', 'developer'],
+  },
+  {
+    key: '2',
+    name: 'Jim Green',
+    age: 42,
+    address: 'London No. 1 Lake Park',
+    tags: ['loser'],
+  },
+  {
+    key: '3',
+    name: 'Joe Black',
+    age: 32,
+    address: 'Sydney No. 1 Lake Park',
+    tags: ['cool', 'teacher'],
+  },
+];
+
 
 
   // Start React Table
@@ -209,51 +305,12 @@ export const VieBill = () => {
             <p className='statistics-name'>Total Items</p>
           </div>
         </div>
-        <div className='flex justify-between'>
-          <input
-            type='text'
-            name='search'
-            placeholder='Search data'
-            className='input'
-            value={globalFilter || ''}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-          />
-          <button
-            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded'
-            onClick={() => setShowPicker(true)}
-          >
-            Filter Date
-          </button>
-
-          {showPicker && (
-            <div
-              style={{
-                position: "absolute",
-                right: "10%",
-                border: "1px solid black",
-                zIndex: 1,
-                visibility: showPicker ? "visible" : "hidden",
-                backgroundColor: "white",
-                boxShadow: "5px 10px #888888",
-              }}
-              ref={ref}
-            >
-              <DateRangePicker
-                onChange={(item) => setRangeDate([item.selection])}
-                showSelectionPreview={true}
-                moveRangeOnFirstSelection={false}
-                ranges={rangeDate}
-                direction="vertical"
-              />
-            </div>
-          )}
-
-        </div>
+       
 
 
 
 
-        <table {...getTableProps()} className='border-collapse border-b border-x-transparent border-slate-400  bg-white mt-8' style={{ width: '100%' }}>
+        {/* <table {...getTableProps()} className='border-collapse border-b border-x-transparent border-slate-400  bg-white mt-8' style={{ width: '100%' }}>
           <thead>
             {
               headerGroups.map(headerGroup => (
@@ -293,7 +350,25 @@ export const VieBill = () => {
                 )
               })}
           </tbody>
-        </table>
+        </table> */}
+      
+       <div className='pt-4 space-y-3'>
+    <div className='flex gap-2 justify-between items-center'>
+   <div className='flex gap-3'>
+   <Link to="/addBill">
+     <Button className='bg-blue-800 text-white border-0'>
+          New Invoice
+        </Button></Link>
+        <Input.Search
+                    defaultValue={""}
+                    allowClear
+                    placeholder="Search for name, contact, email and developer"
+                    onSearch={""}
+                  />
+   </div>
+    </div>
+       <Table columns={columns1} dataSource={data1}   scroll={{ x: 1500}} />
+       </div>
       </div>
     </div>
   )
