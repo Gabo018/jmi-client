@@ -171,7 +171,7 @@ export const VieBill = () => {
   return total + num;
 }
 
-const totalAll = dataSum.reduce(myFunc)
+const totalAll = data1.length != 0 ? dataSum.reduce(myFunc) : null
 const taxExcludedAmount = Math.round(totalAll / (1 + taxRate));
   
 console.log(totalAll)
@@ -188,19 +188,19 @@ console.log(totalAll)
    
       <div className="pt-28 pb-10">
         <Row gutter={24}>
-          <Col xs={24} lg={8} className="bg-white ">
+          <Col xs={24} lg={8} className="bg-white p-4 ">
             <span className="font-bold text-lg">
               Date Range:
             {  firstDateRange || secondDateRange ? "N/A" : `${moment(firstDateRange).format("LL")} - ${moment(secondDateRange).format("LL")} `}
              
             </span>
           </Col>
-          <Col xs={24} lg={8} className="bg-white ">
+          <Col xs={24} lg={8} className="bg-white p-4">
             <span className="font-bold text-lg">
               Total Amount: <span className="text-red-500">₱{totalAmount}</span>{" "}
             </span>
           </Col>
-          <Col xs={24} lg={8} className="bg-white">
+          <Col xs={24} lg={8} className="bg-white p-4">
             <span className="font-bold text-lg">
               Total Items: <span className="text-red-500">{total}</span>
             </span>

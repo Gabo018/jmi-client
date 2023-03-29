@@ -7,6 +7,7 @@ import moment from 'moment'
 import { DateRangePicker } from 'react-date-range'
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
+import { Button, Table } from 'antd';
 
 export const ViewInventory = () => {
 
@@ -92,6 +93,40 @@ export const ViewInventory = () => {
     ])
   }
 
+const columns2 = [
+  {
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
+  },
+  {
+    title: 'Quantity',
+    dataIndex: 'quantity',
+    key: 'quantity',
+  },
+  {
+    title: 'Untaxed Price',
+    dataIndex: 'amount',
+    key: 'amount',
+  },
+  {
+    title: 'Tax',
+    dataIndex: 'amount',
+    key: 'amount',
+
+    render:() => (
+      "Output Tax (VAT 12%)"
+    )
+  },
+  {
+    title: 'Amount',
+    dataIndex: 'amount',
+    key: 'amount',
+  },
+];
+
+console.log(data)
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -172,7 +207,7 @@ export const ViewInventory = () => {
   }, [ref, setShowPicker, rangeDate, deleteState]);
 
   return (
-    <div className="pl-80 pr-28 bg-gradient-to-r from-indigo-900 via-violet-500 to-indigo-400 pb-20"
+    <div className="pl-80 pr-28 bg-gray-400 pb-20"
       style={{
         minHeight: '100vh'
       }}
@@ -204,6 +239,12 @@ export const ViewInventory = () => {
         </div>
 
         <div className='flex justify-between'>
+         <div className='flex gap-3 items-center'>
+          <Link to='/addInventory'>
+         <Button>
+            New Product
+          </Button>
+          </Link>
           <input
             type='text'
             name='search'
@@ -212,13 +253,14 @@ export const ViewInventory = () => {
             value={globalFilter || ''}
             onChange={(e) => setGlobalFilter(e.target.value)}
           />
-          <button
+         
+         </div>
+         <button
             className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded'
             onClick={() => setShowPicker(true)}
           >
             Filter Date
           </button>
-
           {showPicker && (
             <div
               style={{
@@ -243,48 +285,14 @@ export const ViewInventory = () => {
           )}
 
         </div>
+       
 
-        <table {...getTableProps()} className='border-collapse border-b border-x-transparent border-slate-400  bg-white mt-8' style={{ width: '100%' }}>
-          <thead>
-            {
-              headerGroups.map(headerGroup => (
+              <div className='pt-4'>
+              <Table dataSource={data} columns={columns2}  scroll={{
+                x: 2000,
+              }} />;
+              </div>
 
-                <tr {...headerGroup.getHeaderGroupProps()} className='text-violet-600'>
-                  {
-                    headerGroup.headers.map(column => (
-
-                      <th {...column.getHeaderProps()} className='border-b border-slate-300 p-2'>
-                        {
-                          column.render('Header')}
-                      </th>
-                    ))}
-                </tr>
-              ))}
-          </thead>
-
-          <tbody {...getTableBodyProps()}>
-            {
-              rows.map(row => {
-
-                prepareRow(row)
-                return (
-
-                  <tr {...row.getRowProps()} className='border-b border-slate-300 odd:bg-zinc-300'>
-                    {
-                      row.cells.map(cell => {
-
-                        return (
-                          <td {...cell.getCellProps()} className='text-center text-sm p-2'>
-                            {
-                              cell.render('Cell')}
-                          </td>
-                        )
-                      })}
-                  </tr>
-                )
-              })}
-          </tbody>
-        </table>
       </div>
     </div>
   )
