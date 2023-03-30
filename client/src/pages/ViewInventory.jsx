@@ -134,8 +134,9 @@ export const ViewInventory = () => {
   ];
 
   const sortedDataSource = data.sort((a, b) => {
-    return new Date(b.createdAt) - new Date(a.createdAt);
+    return new Date(b.date) - new Date(a.date);
   });
+
   const filteredData = sortedDataSource.filter(
     (record) => record.name === searchTerm
   );
@@ -309,10 +310,14 @@ export const ViewInventory = () => {
         </div>
 
         <div className="pt-4">
+          
           <Table
           className="cursor-pointer"
             dataSource={searchTerm ? filteredData : sortedDataSource}
             columns={columns2}
+            pagination={{
+              position: ["bottomCenter"],
+            }}
             scroll={{
               x: 2000,
             }}
@@ -325,7 +330,7 @@ export const ViewInventory = () => {
               };
             }}
           />
-          ;
+          
         </div>
       </div>
     </div>
