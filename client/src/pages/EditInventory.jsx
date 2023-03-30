@@ -274,7 +274,7 @@ export const EditInventory = () => {
         </div>
       </div>
       <Modal
-        title="Basic Modal"
+        title="Edit Product"
         visible={visible}
         footer={[
           <Button  key="cancel" onClick={handleCloseModal}>

@@ -2,14 +2,17 @@ import React, {  useState,  } from "react";
 
 import { useLocation, useParams} from "react-router-dom";
 import moment from "moment";
-import { Col, DatePicker, Row, Table, Tag, Modal, Button, Form, notification } from "antd";
+import { Col, DatePicker, Row, Table, Tag, Modal, Button, Form, notification, Input, InputNumber, Dropdown, Select } from "antd";
 import { userGetData } from "../modules/service-getUserData";
 import { useMutation, useQuery } from "react-query";
 import { userDeleteBill } from "../modules/service-deleteBill";
+import { userGetInventoryList } from "../modules/server-viewInventory";
 
 export const EditBill = () => {
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isAddingProduct , setIsAddingProduct] = useState(false);
+  const {data:dropdownData} = useQuery()
 
   let { id } = useParams();
   const location = useLocation();
@@ -31,18 +34,24 @@ export const EditBill = () => {
     queryFn: userGetData(id)
   });
 
-  const {mutate } = useMutation(userDeleteBill)
+  const {mutate} = useMutation(userDeleteBill)
+
+  const {data:InventoryProductList , isLoading:inventoryList , isError:inventoryError} =
+   useQuery({
+    queryKey:"inventory-list",
+    queryFn:userGetInventoryList()
+  })
 
 
 
-  if(isLoading){
+  if(isLoading || inventoryList){
     return(
       <div className="pl-80 flex justify-center items-center">
       <h5>Loading...</h5>
       </div>
     )
   }
-  if(isError){
+  if(isError || inventoryError){
     return(
       <div className="pl-80 flex justify-center items-center">
         <h5>Something Went wrong</h5>
@@ -50,7 +59,15 @@ export const EditBill = () => {
     )
   }
 
-  const userData=  data.data.data;
+  console.log(InventoryProductList)
+
+  const userData =  data.data.data;
+  const inventoryData = InventoryProductList.data.data
+  
+  
+  const onSubmitData = (values) => {
+    console.log(values)
+  }
   
 
   const onSubmit = (values) => {
@@ -281,6 +298,9 @@ export const EditBill = () => {
         </div>
         <Row>
           <Col xl={24} style={{ width: "80vw" }}>
+            <button className="bg-green-500 mb-3 text-white p-2 rounded-md" onClick={() => setIsAddingProduct(true)}>
+              Add Line
+            </button>
             <Table
               style={{ zIndex: "10000" }}
               rowKey="id"
@@ -331,6 +351,57 @@ export const EditBill = () => {
           </Modal>
         </div>
       </div>
+      <Modal
+        title="Edit Product"
+        visible={isAddingProduct}
+        footer={[
+          <Button  key="cancel" onClick={() => setIsAddingProduct(false)}>
+            Cancel
+          </Button>,
+          <Button key="ok" type="primary" onClick={form.submit}>
+            OK
+          </Button>,
+        ]}
+
+        onOk={() => setIsAddingProduct(true)} 
+        onCancel={() => setIsAddingProduct(false)}
+      >
+       <Form
+       form={form}
+       onFinish={onSubmitData}
+       >
+
+        <Form.Item
+        name='product_name'
+        label="Product Name"
+        >
+        <Select>
+          {console.log("This is the inventory data " ,inventoryData)}
+          {inventoryData.map((item) => (
+            <Select.Option>
+              {item.name}
+            </Select.Option>
+          ))}
+          
+          <Select.Option>Test</Select.Option>
+          <Select.Option>Test</Select.Option>
+        </Select>
+        </Form.Item>
+        <Form.Item
+        name='quantity_items_bought'
+        label="Product Quantity"
+        >
+          <InputNumber style={{width:"100%"}} />
+        </Form.Item>
+        <Form.Item
+        name='price_of_product'
+        label="Price"
+        >
+          <InputNumber style={{width:"100%"}} />
+        </Form.Item>
+
+       </Form>
+      </Modal>
 
     </div>
   );
