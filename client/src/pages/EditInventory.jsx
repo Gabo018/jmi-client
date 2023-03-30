@@ -2,13 +2,27 @@ import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet'
 import { useParams, useNavigate } from 'react-router-dom'
 import moment from 'moment'
-import { Col, Form, Row, Table } from 'antd'
+import { Button, Col, Form, Input, InputNumber, Modal, Row, Table } from 'antd'
 import imagePlaceholder from '../pictures/image-blank.jpg';
+import { useMutation } from 'react-query'
+import { userEditInventory } from '../modules/service-editInventory'
 
 export const EditInventory = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   let { id } = useParams();
+  const {mutate} = useMutation(userEditInventory)
+
+  const [visible, setVisible] = useState(false);
+
+  const handleOpenModal = () => {
+    setVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setVisible(false);
+  };
+  
   const [userData, setUserData] = useState({ code: '', description: '', amount: '', date: '' });
   const viewInventoryByID = async () => {
     try {
@@ -26,30 +40,19 @@ export const EditInventory = () => {
     }
   }
 
-  const onChangeData = ({ target }) => {
-    const { name, value } = target;
-    setUserData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-  }
-  const onSubmitData = async () => {
-    console.log(userData)
-    const submitData = await fetch(`/api/inventory/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(userData)
-    })
-    if (submitData.ok) {
-      const submitJson = await submitData.json()
-      if (submitJson.acknowledged) {
-        alert('Inventory Edited Successfully.')
-        navigate('/viewInventory');
-      }
+  const totalUntaxed = Math.trunc(userData.amount * userData.quantity);
+  const totalWithTax = Math.trunc(totalUntaxed * 1.12);
+
+  console.log("This is the data " ,userData)
+
+  const onSubmitData = async (values) => {
+    const params = {
+      id,
+      name:values.name,
+      amount:values.amount,
+      quantity:values.quantity
     }
+   mutate(params)
   }
 
   useEffect(() => {
@@ -112,102 +115,13 @@ export const EditInventory = () => {
     },
   ];
   return (
-    // <div className="pl-80 pr-28 bg-gradient-to-r from-indigo-900 via-violet-500 to-indigo-400 pb-20 h-screen">
-    //   <Helmet>
-    //     <title>Edit Inventory</title>
-    //     <meta name="edit inventory" content="This is the Edit Inventory Section" />
-    //   </Helmet>
-    //   <div className="border-b-2 pb-4">
-    //     <h1 className="text-center text-white text-5xl font-bold">
-    //       Edit Inventory
-    //     </h1>
-    //   </div>
-    //   <div className=" bg-white rounded-md shadow-lg mt-8 p-5 ">
-    //     <div className="flex gap-10">
-    //       <div className=" leading-8 ">
-    //         <label
-    //           htmlFor="code"
-    //           className="form-label inline-block mb-2 text-gray-700 font-bold"
-    //         >
-    //           Product Code
-    //         </label>
-    //         <input
-    //           name='code'
-    //           type="text"
-    //           id="code"
-    //           placeholder="Product Code"
-    //           onChange={onChangeData}
-    //           value={userData?.code}
-
-    //           required
-    //           className="input border border-solid border-gray-300"
-    //         />
-
-    //         <label
-    //           htmlFor="description"
-    //           className="form-label inline-block mb-2 text-gray-700 font-bold"
-    //         >
-    //           Description:
-    //         </label>
-    //         <input
-    //           name='description'
-    //           type="text"
-    //           id="description"
-    //           placeholder="Description"
-    //           value={userData?.description}
-    //           onChange={onChangeData}
-    //           required
-    //           className="input border border-solid border-gray-300"
-    //         />
-
-    //         <label
-    //           htmlFor="amount"
-    //           className="form-label inline-block mb-2 text-gray-700 font-bold"
-    //         >
-    //           Amount:
-    //         </label>
-    //         <input
-    //           name='amount'
-    //           type="text"
-    //           id="amount"
-    //           placeholder="Product Amount"
-    //           value={userData?.amount}
-    //           onChange={onChangeData}
-    //           required
-    //           className="input border border-solid border-gray-300"
-    //         />
-
-    //         <label
-    //           htmlFor="date"
-    //           className="form-label inline-block mb-2 text-gray-700 font-bold"
-    //         >
-    //           Date:
-    //         </label>
-    //         <input
-    //           name='date'
-    //           type="date"
-    //           id="date"
-    //           value={moment(userData?.date).format('YYYY-MM-DD')}
-    //           onChange={onChangeData}
-    //           required
-    //           className="input border border-solid border-gray-300"
-    //         />
-    //       </div>
-    //     </div>
-    //     <button
-    //       type="submit"
-    //       className="bg-violet-600 mt-4 rounded-md shadow-lg p-4 hover: text-white hover:bg-violet-700"
-    //       onClick={onSubmitData}
-    //     >
-    //       Edit Inventory
-    //     </button>
-    //   </div>
-    // </div>
+   
+ 
     <div className="pl-80 pr-28 bg-gray-200 pb-20 h-screen">
       <div className="flex flex-col items- bg-gray-200 px-8 justify-start h- w-full">
         <div className="pt-10 pb-10 flex justify-between items-start w-full">
           <section className="lh-sm ">
-            <span className="fw-bold text-2xl font-bold">Product Name</span>
+            <span className="fw-bold text-2xl font-bold">{userData.name}</span>
        
             
             <small
@@ -238,24 +152,58 @@ export const EditInventory = () => {
         </div>
         <Row>
           <Col xl={24} style={{ width: "80vw" }}>
-            <Table
+            <div className='bg-white flex items-center justify-between overflow-x-auto px-4'>
+            <div className='p-4'>
+                <h5>Untaxed Price per Item</h5>
+                ₱  {userData.amount}
+              </div>
+              <div className='p-4'>
+                <h5>Product Name</h5>
+                {userData.name}
+              </div>
+              <div>
+              <h5>Product Name</h5>
+                VAT 12%
+              </div>
+              <div>
+              <h5>Quantity</h5>
+               {userData.quantity}
+              </div>
+              <div>
+              <h5>Total Price Untaxed</h5>
+              ₱ {totalUntaxed} 
+              </div>
+
+              <div>
+              <h5>Total Price with tax</h5>
+              ₱ {totalWithTax} 
+              </div>
+             </div>
+           
+            
+            
+            
+            {/* <Table
               style={{ zIndex: "10000" }}
               rowKey="id"
               columns={columns1}
               // rowSelection={rowSelection}
               // columns={columns1}
-              // dataSource={data1}
+              // dataSource={userData}
               pagination={{
                 position: ["bottomCenter"],
               }}
               scroll={{
                 x: 3000,
               }}
-            />
+            /> */}
           </Col>
         </Row>
         <div className="flex justify-between pt-4">
-          <div>
+          <div className='space-x-4'>
+          <button onClick={handleOpenModal} className="bg-gray-400 hover:bg-gray-700 p-2 text-white   px-4 rounded">
+              Edit
+            </button>
             <button className="bg-red-500 hover:bg-red-700 p-2 text-white   px-4 rounded">
               Archive
             </button>
@@ -289,7 +237,47 @@ export const EditInventory = () => {
           </Modal> */}
         </div>
       </div>
+      <Modal
+        title="Basic Modal"
+        visible={visible}
+        footer={[
+          <Button  key="cancel" onClick={handleCloseModal}>
+            Cancel
+          </Button>,
+          <Button key="ok" type="primary" onClick={form.submit}>
+            OK
+          </Button>,
+        ]}
 
+        onOk={handleOpenModal}
+        onCancel={handleCloseModal}
+      >
+       <Form
+       form={form}
+       onFinish={onSubmitData}
+       >
+
+        <Form.Item
+        name='name'
+        label="Product Name"
+        >
+          <Input className='w-full' />
+        </Form.Item>
+        <Form.Item
+        name='quantity'
+        label="Product Quantity"
+        >
+          <InputNumber style={{width:"100%"}} />
+        </Form.Item>
+        <Form.Item
+        name='price'
+        label="Price"
+        >
+          <InputNumber style={{width:"100%"}} />
+        </Form.Item>
+
+       </Form>
+      </Modal>
     </div>
   )
 }
