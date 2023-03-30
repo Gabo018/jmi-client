@@ -280,11 +280,12 @@ apiRouters.post("/addBill", async (req, res) => {
         message: "Missing fields are required!",
       });
     }
+    let vat = parseInt(amount) * 0.12;
     const newBilling = await new Billing({
       name,
       due_date,
       payment_date,
-      total_payment,
+      total_payment: parseInt(total_payment) + vat,
       archive: true,
     });
 
@@ -737,11 +738,11 @@ apiRouters.get("/netProfit", async (req, res) => {
 // Start Inventory Routers
 apiRouters.post("/inventory", authToken, async (req, res) => {
   try {
-    const { code, description, amount, date } = req.body;
+    const { name, quantity, amount, date } = req.body;
     let vat = parseInt(amount) * 0.12;
     const addInventory = await new Inventory({
-      code,
-      description,
+      name,
+      quantity,
       amount: parseInt(amount) + vat,
       date,
     }).save();

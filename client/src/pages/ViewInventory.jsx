@@ -1,57 +1,59 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
-import { useTable, useGlobalFilter } from 'react-table';
-import { addDays } from 'date-fns';
-import { Link } from 'react-router-dom'
-import moment from 'moment'
-import { DateRangePicker } from 'react-date-range'
+import React, { useMemo, useState, useRef, useEffect } from "react";
+import { Helmet } from "react-helmet";
+import { useTable, useGlobalFilter } from "react-table";
+import { addDays } from "date-fns";
+import { Link } from "react-router-dom";
+import moment from "moment";
+import { DateRangePicker } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
-import { Button, Table } from 'antd';
+import { Button, Input, Table } from "antd";
 
 export const ViewInventory = () => {
-
-
   // Start React Table
   const [tableData, setTableData] = useState({ statistics: {}, data: [] });
-  const data = useMemo(() => tableData.data, [tableData]
-  )
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const data = useMemo(() => tableData.data, [tableData]);
 
   const columns = useMemo(
     () => [
       {
-        Header: 'Code',
-        accessor: 'code',
+        Header: "Code",
+        accessor: "code",
       },
       {
-        Header: 'Description',
-        accessor: 'description',
+        Header: "Description",
+        accessor: "description",
       },
       {
-        Header: 'Amount',
-        accessor: 'amount',
-        Cell: ({ value }) => `₱ ${value.toFixed(2)}`
+        Header: "Amount",
+        accessor: "amount",
+        Cell: ({ value }) => `₱ ${value.toFixed(2)}`,
       },
       {
-        Header: 'Date',
-        accessor: 'date',
-        Cell: ({ value }) => moment(value).format('MMMM DD, YYYY')
+        Header: "Date",
+        accessor: "date",
+        Cell: ({ value }) => moment(value).format("MMMM DD, YYYY"),
       },
-    ], []
-  )
+    ],
+    []
+  );
 
   const tableHooks = (hooks) => {
     hooks.visibleColumns.push((columns) => [
       ...columns,
       {
-        id: 'Edit',
-        Header: 'ACTIONS',
+        id: "Edit",
+        Header: "ACTIONS",
         Cell: ({ row }) => {
           return (
             <>
               <button
                 className="text-red-700 hover:text-red-900 hover:shadow-lg"
-                onClick={() => onSubmitDelete(row.original._id, row.original.code)}
+                onClick={() =>
+                  onSubmitDelete(row.original._id, row.original.code)
+                }
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -88,44 +90,55 @@ export const ViewInventory = () => {
               </button>
             </>
           );
-        }
-      }
-    ])
-  }
+        },
+      },
+    ]);
+  };
 
-const columns2 = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-  },
-  {
-    title: 'Quantity',
-    dataIndex: 'quantity',
-    key: 'quantity',
-  },
-  {
-    title: 'Untaxed Price',
-    dataIndex: 'amount',
-    key: 'amount',
-  },
-  {
-    title: 'Tax',
-    dataIndex: 'amount',
-    key: 'amount',
+  const columns2 = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Quantity",
+      dataIndex: "quantity",
+      key: "quantity",
+    },
+    {
+      title: "Untaxed Price",
+      dataIndex: "amount",
+      key: "amount",
+      render: (text) => {
+        const amountWithoutTax = text / 1.12;
+        return <span>₱{amountWithoutTax}</span>;
+      },
+    },
+    {
+      title: "Tax",
+      dataIndex: "amount",
+      key: "amount",
 
-    render:() => (
-      "Output Tax (VAT 12%)"
-    )
-  },
-  {
-    title: 'Amount',
-    dataIndex: 'amount',
-    key: 'amount',
-  },
-];
+      render: () => "Output Tax (VAT 12%)",
+    },
+    {
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
+      render: (text) => {
+        const wholeNumber = Math.trunc(text);
+        return <span>₱{wholeNumber}</span>;
+      },
+    },
+  ];
 
-console.log(data)
+  const sortedDataSource = data.sort((a, b) => {
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+  const filteredData = sortedDataSource.filter(
+    (record) => record.name === searchTerm
+  );
 
   const {
     getTableProps,
@@ -134,64 +147,69 @@ console.log(data)
     rows,
     prepareRow,
     setGlobalFilter,
-    state
-  } = useTable({ columns, data }, tableHooks, useGlobalFilter)
+    state,
+  } = useTable({ columns, data }, tableHooks, useGlobalFilter);
   const { globalFilter } = state;
   // End React Table
 
-  // Start Date Range Picker
+  // Start Date  Picker
   const [showPicker, setShowPicker] = useState(false);
   const ref = useRef(null);
   const [rangeDate, setRangeDate] = useState([
     {
-      startDate: new Date('01/01/1900'),
-      endDate: new Date('01/01/3000'),
+      startDate: new Date("01/01/1900"),
+      endDate: new Date("01/01/3000"),
       key: "selection",
     },
   ]);
   const onSubmitDate = () => {
     dataFetching();
-  }
+  };
   // End Date Range Picker
 
   // Start FetchingAPI
   const dataFetching = async () => {
     try {
-      const dataResponse = await fetch(`/api/inventory?dTo=${'' || moment(rangeDate[0].endDate).format('MM/DD/YYYY')}&dFrom=${'' || moment(rangeDate[0].startDate).format('MM/DD/YYYY')}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const dataResponse = await fetch(
+        `/api/inventory?dTo=${
+          "" || moment(rangeDate[0].endDate).format("MM/DD/YYYY")
+        }&dFrom=${"" || moment(rangeDate[0].startDate).format("MM/DD/YYYY")}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      })
-      const dataJson = await dataResponse.json()
-      setTableData(dataJson)
+      );
+      const dataJson = await dataResponse.json();
+      setTableData(dataJson);
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
-  }
+  };
   // End FetchingAPI
 
   // Start Delete Product
   const [deleteState, setDeleteState] = useState();
   const onSubmitDelete = async (id, code) => {
     try {
-      alert(`Product Code: ${code}`)
-      if (window.confirm('Are your sure you want to delete this inventory?')) {
+      alert(`Product Code: ${code}`);
+      if (window.confirm("Are your sure you want to delete this inventory?")) {
         const deleteData = await fetch(`/api/inventory/${id}`, {
-          method: 'DELETE',
+          method: "DELETE",
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        })
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         if (deleteData.ok) {
           const deleteJson = await deleteData.json();
-          setDeleteState(deleteJson)
+          setDeleteState(deleteJson);
         }
       }
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
-  }
+  };
   // End Delete Product
   useEffect(() => {
     dataFetching();
@@ -207,56 +225,61 @@ console.log(data)
   }, [ref, setShowPicker, rangeDate, deleteState]);
 
   return (
-    <div className="pl-80 pr-28 bg-gray-400 pb-20"
+    <div
+      className="pl-80 pr-28 bg-gray-400 pb-20"
       style={{
-        minHeight: '100vh'
+        minHeight: "100vh",
       }}
     >
       <Helmet>
         <title>View Inventory</title>
-        <meta name="view inventory" content="This is the View Inventory Section" />
+        <meta
+          name="view inventory"
+          content="This is the View Inventory Section"
+        />
       </Helmet>
       <div className="border-b-2 pb-4">
         <h1 className="text-center text-white text-5xl font-bold">
           View Inventory
         </h1>
       </div>
-      <div className='mt-6'>
-
-        <div className='flex justify-between'>
-          <div className='bg-gray-50 inventory-statistics'>
-            <p className='statistics-value'>{tableData && tableData.statistics.rangeDate?.from} - {tableData && tableData.statistics.rangeDate?.to}</p>
-            <p className='statistics-name'>Date</p>
+      <div className="mt-6">
+        <div className="flex justify-between">
+          <div className="bg-gray-50 inventory-statistics">
+            <p className="statistics-value">
+              {tableData && tableData.statistics.rangeDate?.from} -{" "}
+              {tableData && tableData.statistics.rangeDate?.to}
+            </p>
+            <p className="statistics-name">Date</p>
           </div>
-          <div className='bg-gray-50 inventory-statistics'>
-            <p className='statistics-value'>₱ {tableData && tableData.statistics.amount?.toFixed(2)}</p>
-            <p className='statistics-name'>Amount</p>
+          <div className="bg-gray-50 inventory-statistics">
+            <p className="statistics-value">
+              ₱ {tableData && tableData.statistics.amount?.toFixed(2)}
+            </p>
+            <p className="statistics-name">Amount</p>
           </div>
-          <div className='bg-gray-50 inventory-statistics'>
-            <p className='statistics-value'>{tableData && tableData.statistics?.total}</p>
-            <p className='statistics-name'>Total Items</p>
+          <div className="bg-gray-50 inventory-statistics">
+            <p className="statistics-value">
+              {tableData && tableData.statistics?.total}
+            </p>
+            <p className="statistics-name">Total Items</p>
           </div>
         </div>
 
-        <div className='flex justify-between'>
-         <div className='flex gap-3 items-center'>
-          <Link to='/addInventory'>
-         <Button>
-            New Product
-          </Button>
-          </Link>
-          <input
-            type='text'
-            name='search'
-            placeholder='Search data'
-            className='input'
-            value={globalFilter || ''}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-          />
-         
-         </div>
-         <button
-            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded'
+        <div className="flex justify-between">
+          <div className="flex gap-3 items-center">
+            <Link to="/addInventory">
+              <Button>New Product</Button>
+            </Link>
+            <Input.Search
+              defaultValue={""}
+              allowClear
+              placeholder="Search for name, contact, email and developer"
+              onSearch={(e) => setSearchTerm(e)}
+            />
+          </div>
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
             onClick={() => setShowPicker(true)}
           >
             Filter Date
@@ -283,17 +306,28 @@ console.log(data)
               />
             </div>
           )}
-
         </div>
-       
 
-              <div className='pt-4'>
-              <Table dataSource={data} columns={columns2}  scroll={{
-                x: 2000,
-              }} />;
-              </div>
-
+        <div className="pt-4">
+          <Table
+          className="cursor-pointer"
+            dataSource={searchTerm ? filteredData : sortedDataSource}
+            columns={columns2}
+            scroll={{
+              x: 2000,
+            }}
+            onRow={(record, rowIndex) => {
+ 
+              return {
+                onClick: () => {
+                  window.location.href = `/viewInventory/${record._id}?index=${rowIndex + 1  }`;
+                },
+              };
+            }}
+          />
+          ;
+        </div>
       </div>
     </div>
-  )
-}
+  );
+};

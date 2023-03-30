@@ -1,4 +1,5 @@
 import { Button, DatePicker, Form, Input, InputNumber, notification } from 'antd';
+import moment from 'moment';
 import React, { useState } from 'react'
 import { Helmet } from "react-helmet";
 import { useMutation } from 'react-query';
@@ -11,8 +12,15 @@ export const AddInventory = () => {
   const {mutate} = useMutation(userAddProduct)
 
   const onSubmit = (values) => {
+    const params = {
+      date:moment(),
+      name:values.name,
+      amount:parseInt(values.price),
+      quantity:values.quantity
+      
+    }
     console.log(values)
-    mutate(values , {
+    mutate(params , {
       onSuccess:() => {
         form.resetFields()
         notification.success({
