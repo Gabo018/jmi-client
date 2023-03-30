@@ -8,7 +8,7 @@ export const userEditInventory = async (params) => {
     },
   };
 
-  const data = await axios.put(
+  const data = await axios.patch(
     `/api/inventory/${params.id}`,
     params,
     axiosConfig

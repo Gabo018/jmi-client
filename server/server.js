@@ -744,6 +744,7 @@ apiRouters.post("/inventory", authToken, async (req, res) => {
       name,
       quantity,
       amount: parseInt(amount) + vat,
+      archive: true,
       date,
     }).save();
     res.status(200).json({
@@ -752,6 +753,53 @@ apiRouters.post("/inventory", authToken, async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+  }
+});
+//change archive
+apiRouters.patch("/inventory/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const inventoryResponse = await Inventory.findById(id);
+
+    if (!inventoryResponse) {
+      return res.status(404).json({
+        code: 404,
+        message: "Inventory not found.",
+      });
+    }
+
+    // Toggle the value of the 'archive' field
+    const updatedInventory = await Inventory.findByIdAndUpdate(
+      id,
+      { $set: { archive: inventoryResponse.archive ? false : true } },
+      { new: true } // Return the updated document
+    );
+
+    res.json(updatedInventory);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      code: 500,
+      message: "Server error.",
+    });
+  }
+});
+
+//get all archive inventory
+
+apiRouters.get("/inventory/archive-list", async (req, res) => {
+  try {
+    const inventoryResponse = await Inventory.find({
+      $or: [{ archive: false }, { archive: { $exists: false } }],
+    });
+
+    res.status(200).json(inventoryResponse);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      code: 500,
+      message: "Server error.",
+    });
   }
 });
 
@@ -811,16 +859,17 @@ apiRouters.get("/inventory/:id", authToken, async (req, res) => {
   }
 });
 
-apiRouters.put("/inventory/:id", authToken, async (req, res) => {
+apiRouters.patch("/inventory/:id", authToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { code, description, amount, date } = req.body;
+    const { name, quantity, amount, date } = req.body;
+    console.log(name, quantity, amount, date);
     const updateData = await Inventory.update(
       {
         _id: id,
       },
       {
-        $set: { code, description, amount, date },
+        $set: { name, quantity, amount, date },
       }
     );
     res.json(updateData);

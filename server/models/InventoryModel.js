@@ -19,6 +19,10 @@ const inventorySchema = new Schema(
       type: Date,
       required: true,
     },
+    archive: {
+      type: Boolean,
+      required: true,
+    },
   },
   { collection: "inventory" }
 );

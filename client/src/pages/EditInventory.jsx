@@ -2,16 +2,18 @@ import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet'
 import { useParams, useNavigate } from 'react-router-dom'
 import moment from 'moment'
-import { Button, Col, Form, Input, InputNumber, Modal, Row, Table } from 'antd'
+import { Button, Col, Form, Input, InputNumber, Modal, notification, Row, Table } from 'antd'
 import imagePlaceholder from '../pictures/image-blank.jpg';
 import { useMutation } from 'react-query'
 import { userEditInventory } from '../modules/service-editInventory'
+import { userDeleteInventory } from '../modules/service-deleteInventory'
 
 export const EditInventory = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   let { id } = useParams();
   const {mutate} = useMutation(userEditInventory)
+  const {mutate:deleteInventory}= useMutation(userDeleteInventory)
 
   const [visible, setVisible] = useState(false);
 
@@ -22,6 +24,25 @@ export const EditInventory = () => {
   const handleCloseModal = () => {
     setVisible(false);
   };
+
+  const handleDelete = (id) => {
+    deleteInventory(id , {
+
+      onSuccess:() => {
+        notification.success({
+          message:"Success" , 
+          description:"Inventory successfully moved to archived list"
+        })
+      },
+      onError:() => {
+        notification.error({
+          message:"Error" , 
+          description:"Something went wrong"
+        })
+      }
+    })
+  }
+  
   
   const [userData, setUserData] = useState({ code: '', description: '', amount: '', date: '' });
   const viewInventoryByID = async () => {
@@ -48,11 +69,26 @@ export const EditInventory = () => {
   const onSubmitData = async (values) => {
     const params = {
       id,
+      date:moment(),
       name:values.name,
-      amount:values.amount,
+      amount:values.price,
       quantity:values.quantity
     }
-   mutate(params)
+   mutate(params , {
+    onSuccess:() => {
+      notification.success({
+        message:"Success",
+        description:"edit product successfully"
+      })
+    },
+    onError:() => {
+      notification.error({
+        message:"Error",
+        description:"Something went wrong"
+      })
+    }
+    
+   })
   }
 
   useEffect(() => {
@@ -204,7 +240,7 @@ export const EditInventory = () => {
           <button onClick={handleOpenModal} className="bg-gray-400 hover:bg-gray-700 p-2 text-white   px-4 rounded">
               Edit
             </button>
-            <button className="bg-red-500 hover:bg-red-700 p-2 text-white   px-4 rounded">
+            <button className="bg-red-500 hover:bg-red-700 p-2 text-white   px-4 rounded" onClick={() => handleDelete(userData._id)}>
               Archive
             </button>
           </div>
