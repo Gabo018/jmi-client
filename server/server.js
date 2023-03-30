@@ -375,7 +375,7 @@ apiRouters.get("/bill", async (req, res) => {
     const { dTo, dFrom } = req.query;
     const matchQuery = {};
     if (dTo && dFrom) {
-      matchQuery.date = {
+      matchQuery.createdAt = {
         $gte: new Date(dFrom),
         $lte: new Date(dTo),
       };

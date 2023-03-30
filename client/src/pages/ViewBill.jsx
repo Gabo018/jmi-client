@@ -16,13 +16,14 @@ export const VieBill = () => {
   const [dateRange, setDateRange] = useState();
   const [totalWithoutTax , setTotalWihoutTax] = useState();
 
-  const firstDateRange = dateRange && dateRange.length === 2 && moment(dateRange[0], "YYYY-MM-DD").isValid() ? Object.values(dateRange)[0] : null;
-  const secondDateRange = dateRange && dateRange.length === 2 && moment(dateRange[1], "YYYY-MM-DD").isValid() ? Object.values(dateRange)[1] : moment();
+  const firstDateRange = dateRange && dateRange.length === 2 && moment(dateRange[0], "YYYY-MM-DD").isValid() ? Object.values(dateRange)[0] : moment().startOf('day').subtract(1, 'days');
+  const secondDateRange = dateRange && dateRange.length === 2 && moment(dateRange[1], "YYYY-MM-DD").isValid() ? Object.values(dateRange)[1] : null;
   
   const params = {
     dFrom: firstDateRange ? moment(firstDateRange).format("YYYY-MM-DD") : null,
     dTo: secondDateRange ? moment(secondDateRange).format("YYYY-MM-DD") : null,
   };
+  
   
   const {
     data: dataBill,
