@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const Billing = require("./models/BillingModel");
 const Expenses = require("./models/ExpensesModel");
 const Admin = require("./models/AdminModel.js");
+const ProductSoldModel = require("./models/ProductSoldModel");
 const Inventory = require("./models/InventoryModel.js");
 const app = express();
 const cors = require("cors");
@@ -12,6 +13,7 @@ const morgan = require("morgan");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
+const moment = require("moment");
 
 // Middleware
 app.use(morgan("dev"));
@@ -271,6 +273,111 @@ apiRouters.get("/homeData", authToken, async (req, res) => {
 // End Home
 
 // Start Bill Routers
+
+//put a bought product under specific bill
+apiRouters.post("/bill/bought-product", async (req, res) => {
+  try {
+    const {
+      user_bought,
+      product_name,
+      quantity_items_bought,
+      mode_of_payment,
+      product_id,
+      price_of_product,
+    } = req.body;
+
+    // Check if all required fields are present
+    if (
+      !user_bought ||
+      !product_name ||
+      !quantity_items_bought ||
+      !mode_of_payment ||
+      !product_id ||
+      !price_of_product
+    ) {
+      return res.status(400).json({
+        status: 400,
+        message: "Missing required fields",
+      });
+    }
+
+    // Find the product in the inventory model
+    const product = await Inventory.findById(product_id);
+    if (!product) {
+      return res.status(404).json({
+        status: 404,
+        message: "Product not found in inventory",
+      });
+    }
+
+    let productQuantity = parseInt(product.quantity);
+    let productQuantityBought = parseInt(quantity_items_bought);
+
+    // Check if there is enough quantity in stock to fulfill the order
+    if (productQuantity < productQuantityBought) {
+      return res.status(400).json({
+        status: 400,
+        message: "Insufficient quantity in stock",
+      });
+    }
+
+    // Subtract the quantity bought from the current quantity in stock
+    productQuantity -= productQuantityBought;
+
+    await Inventory.findByIdAndUpdate(
+      product_id,
+      { quantity: productQuantity },
+      { new: true }
+    );
+
+    // Create a new bill for the purchase
+    const newBoughtProduct = await new ProductSoldModel({
+      user_bought,
+      product_name,
+      quantity_items_bought,
+      mode_of_payment,
+      product_id,
+      price_of_product,
+      createdAt: moment(),
+    });
+
+    // Save the new bill to the database
+    await newBoughtProduct.save();
+
+    return res.status(200).json({
+      status: 200,
+      message: "Successfully added product",
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      status: 500,
+      message: "Internal server error",
+    });
+  }
+});
+
+apiRouters.get("/bill/bought-product/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Find all bought products by user id
+    const boughtProducts = await ProductSoldModel.find({ user_bought: userId });
+
+    return res.status(200).json({
+      status: 200,
+      message: "Successfully retrieved bought products",
+      data: boughtProducts,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      status: 500,
+      message: "Internal server error",
+    });
+  }
+});
+
 apiRouters.post("/addBill", async (req, res) => {
   try {
     const { name, due_date, payment_date, total_payment } = req.body;
