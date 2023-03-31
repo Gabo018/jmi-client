@@ -495,7 +495,7 @@ export const EditBill = () => {
             <Select>
               <Select.Option value="Sales/Revenue">Sales/Revenue</Select.Option>
               <Select.Option value="Accounts Receivable">
-                Accounts Recievable
+                Accounts Receivable
               </Select.Option>
             </Select>
           </Form.Item>

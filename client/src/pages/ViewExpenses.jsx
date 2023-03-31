@@ -7,6 +7,9 @@ import moment from 'moment'
 import { DateRangePicker } from 'react-date-range'
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
+import { Table, notification } from "antd";
+import { userDeleteExpense } from "../modules/service-editArchiveExpense";
+import { useMutation } from "react-query";
 
 
 
@@ -16,6 +19,67 @@ export const ViewExpenses = () => {
   const [tableData, setTableData] = useState({ statistics: {}, data: [] });
   const data = useMemo(() => tableData.data, [tableData]
   )
+
+
+  const columns1 = [
+    {
+      title: "Payment Reference",
+      dataIndex: "name",
+      key: "name",
+      render: (params, record, index) => {
+        return `EINV/0000${index + 1}/23`;
+      },
+    },
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Invoice Date",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text) => {
+        return <>{text == undefined ? "N/A" : moment(text).format("LL")}</>;
+      },
+    },
+    {
+      title: "due_date",
+      dataIndex: "due_date",
+      key: "due_date",
+      render: (text) => {
+        const date = moment(text);
+        const currentDate = moment();
+        const isPast = date.isBefore(currentDate, "day");
+        return (
+          <span className={isPast ? "text-red-500" : "text-black"}>
+            {text == undefined ? "N/A " : moment(text).format("LL")}
+          </span>
+        );
+      },
+    },
+  
+    {
+      title: "Discount",
+      dataIndex: "discount",
+      key: "discount",
+      render: (text) => <>{text == undefined ? "N/A" : text}</>,
+    },
+  
+
+  
+    {
+      title: "Status",
+      dataIndex: "isArchive",
+      key: "isArchive",
+      render: (text) => {
+        return (
+          <span className={text ? "text-green-500" : "text-red-600"}>{text  ? "Active" : "Archive"}</span>
+        )
+      },
+    },
+   
+  ];
 
   const columns = useMemo(
     () => [
@@ -246,51 +310,40 @@ export const ViewExpenses = () => {
           )}
 
         </div>
+       
 
 
 
-
-        <table {...getTableProps()} className='border-collapse border-b border-x-transparent border-slate-400  bg-white mt-8' style={{ width: '100%' }}>
-          <thead>
-            {
-              headerGroups.map(headerGroup => (
-
-                <tr {...headerGroup.getHeaderGroupProps()} className='text-violet-600'>
-                  {
-                    headerGroup.headers.map(column => (
-
-                      <th {...column.getHeaderProps()} className='border-b border-slate-300 p-2'>
-                        {
-                          column.render('Header')}
-                      </th>
-                    ))}
-                </tr>
-              ))}
-          </thead>
-
-          <tbody {...getTableBodyProps()}>
-            {
-              rows.map(row => {
-
-                prepareRow(row)
-                return (
-
-                  <tr {...row.getRowProps()} className='border-b border-slate-300 odd:bg-zinc-300'>
-                    {
-                      row.cells.map(cell => {
-
-                        return (
-                          <td {...cell.getCellProps()} className='text-center text-sm p-2'>
-                            {
-                              cell.render('Cell')}
-                          </td>
-                        )
-                      })}
-                  </tr>
-                )
-              })}
-          </tbody>
-        </table>
+        <div className="mt-4">
+          <Link to='/addExpense'>
+          <button className="bg-green-500 p-2 mt-5 mb-3 text-white">
+            Add Expense
+          </button>
+          </Link>
+        <Table
+            className="cursor-pointer "
+              style={{ zIndex: "10000" }}
+              rowKey="id"
+              // rowSelection={rowSelection}
+              columns={columns1}
+              dataSource={data}
+           
+              pagination={{
+                position: ["bottomCenter"],
+              }}
+              onRow={(record, rowIndex) => {
+ 
+                return {
+                  onClick: () => {
+                    window.location.href = `/expenseRecord/${record._id}?index=${rowIndex + 1  }`;
+                  },
+                };
+              }}
+              scroll={{
+                x: 2000,
+              }}
+            />
+        </div>
       </div>
     </div>
   );

@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet'
 import { useParams, useNavigate } from 'react-router-dom'
 import moment from 'moment'
+import { userDeleteExpense } from '../modules/service-editArchiveExpense'
+import { useMutation } from 'react-query'
+import { notification } from 'antd'
 
 export const EditExpenses = () => {
   const navigate = useNavigate();
@@ -34,6 +37,24 @@ export const EditExpenses = () => {
       console.log(err)
     }
   }
+  const {mutate} = useMutation(userDeleteExpense)
+  const handleDelete = (id) => {
+    mutate(id, {
+      onSuccess: () => {
+      
+        notification.success({
+          message: "Success",
+          description: "Billing moved to archive list",
+        });
+      },
+      onError: () => {
+        notification.error({
+          message: "Failed",
+          description: "Something went wrong",
+        });
+      },
+    });
+  };
 
   const retrieveData = async () => {
     try {
@@ -154,6 +175,14 @@ export const EditExpenses = () => {
             >
               Edit Expenses
             </button>
+            <button
+              type="submit"
+              className="bg-red-600 mx-2 mt-4 rounded-md shadow-lg p-4 hover: text-white hover:bg-violet-700"
+              onClick={() => handleDelete(id)}
+            >
+           Archive
+            </button>
+           
           </div>
         </div>
       </div>

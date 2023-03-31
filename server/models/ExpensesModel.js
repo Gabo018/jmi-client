@@ -3,11 +3,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const expensesSchema = new Schema(
   {
-    deductionType: {
-      type: String,
-      required: true,
-    },
-    description: {
+    name: {
       type: String,
       required: true,
     },
@@ -15,16 +11,16 @@ const expensesSchema = new Schema(
       type: Number,
       required: true,
     },
-    date: {
+    due: {
+      type: Date,
+      required: true,
+    },
+    invoice_date: {
       type: Date,
       default: Date.now,
     },
-    processBy: {
-      type: String,
-      required: true,
-    },
-    account_type: {
-      type: String,
+    isArchive: {
+      type: Boolean,
       required: true,
     },
   },
