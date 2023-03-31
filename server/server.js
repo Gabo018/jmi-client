@@ -398,6 +398,7 @@ apiRouters.post("/addBill", async (req, res) => {
       due_date,
       payment_date,
       total_payment: parseInt(total_payment) + vat,
+
       archive: true,
     });
 
@@ -543,6 +544,39 @@ apiRouters.patch("/bill-edit/:id", async (req, res) => {
   }
 });
 
+//get All expense and billing
+
+apiRouters.get("/get-expense-billing", async (req, res) => {
+  try {
+    let expenses = await Expenses.find();
+    let billing = await Billing.find();
+
+    // Check if date range is provided
+    const { startDate, endDate } = req.query;
+    if (startDate && endDate) {
+      // Filter expenses and billing by date range
+      expenses = expenses.filter((expense) => {
+        const expenseDate = new Date(expense.date);
+        return (
+          expenseDate >= new Date(startDate) && expenseDate <= new Date(endDate)
+        );
+      });
+
+      billing = billing.filter((bill) => {
+        const billDueDate = new Date(bill.due_date);
+        return (
+          billDueDate >= new Date(startDate) && billDueDate <= new Date(endDate)
+        );
+      });
+    }
+
+    res.status(200).json({ expenses, billing });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 // End Bill Routers
 
 // Start Expenses Routers
@@ -557,6 +591,7 @@ apiRouters.post("/expenses", authToken, async (req, res) => {
         description,
         amount,
         date,
+        account_type: "Expense",
         processBy: name,
       }).save();
       return res.json({
