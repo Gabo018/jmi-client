@@ -596,7 +596,7 @@ apiRouters.patch("/expense/:id", async (req, res) => {
     // Toggle the value of the 'archive' field
     const updatedInventory = await Expenses.findByIdAndUpdate(
       id,
-      { $set: { isArchive: inventoryResponse.isArchive ? false : true } },
+      { $set: { archive: inventoryResponse.archive ? false : true } },
       { new: true } // Return the updated document
     );
 
