@@ -580,19 +580,47 @@ apiRouters.get("/get-expense-billing", async (req, res) => {
 // End Bill Routers
 
 // Start Expenses Routers
+
+apiRouters.patch("/expense/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const inventoryResponse = await Expenses.findById(id);
+
+    if (!inventoryResponse) {
+      return res.status(404).json({
+        code: 404,
+        message: "Inventory not found.",
+      });
+    }
+
+    // Toggle the value of the 'archive' field
+    const updatedInventory = await Expenses.findByIdAndUpdate(
+      id,
+      { $set: { isArchive: inventoryResponse.isArchive ? false : true } },
+      { new: true } // Return the updated document
+    );
+
+    res.json(updatedInventory);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      code: 500,
+      message: "Server error.",
+    });
+  }
+});
 apiRouters.post("/expenses", authToken, async (req, res) => {
   // const data = req.body;
   try {
-    const { deductionType, description, amount, date } = req.body;
-    const { name } = req.user;
-    if (deductionType && description && amount && date) {
+    const { amount, due, name } = req.body;
+
+    if (due && amount && name) {
       const addExpenses = await new Expenses({
-        deductionType,
-        description,
         amount,
-        date,
+        due,
         account_type: "Expense",
-        processBy: name,
+        name,
+        isArchive: true,
       }).save();
       return res.json({
         code: 200,
@@ -601,7 +629,7 @@ apiRouters.post("/expenses", authToken, async (req, res) => {
     }
     return res.status(400).json({
       code: 400,
-      message: "Expenses Added Successfully.",
+      message: "Error",
     });
   } catch (err) {
     console.log(err);

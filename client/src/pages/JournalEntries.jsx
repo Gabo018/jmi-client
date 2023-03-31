@@ -1,155 +1,146 @@
-import { Button, DatePicker, Input, Table } from "antd";
-import { DateRange } from "react-date-range";
+import { useState, useEffect } from "react";
+import { Button, DatePicker, Dropdown, Input, Menu, Select, Table } from "antd";
 import { Link } from "react-router-dom";
 
 const JournalEntries = () => {
-  const dataSource = [
+  const [dataSource, setDataSource] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [dateRange, setDateRange] = useState(null);
+  const [searchText, setSearchText] = useState("");
+  const [filteredData, setFilteredData] = useState([]);
+
+  const fetchJournalEntries = async () => {
+    setLoading(true);
+    const url = dateRange
+      ? `/api/get-expense-billing?start=${dateRange[0].format(
+          "YYYY-MM-DD"
+        )}&end=${dateRange[1].format("YYYY-MM-DD")}`
+      : "/api/get-expense-billing";
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      setDataSource(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchJournalEntries();
+  }, [dateRange]);
+  
+
+  const columns = [
+  
     {
-      key: "1",
-      account_name: "Cash",
-      account_type: "Bank and Cash",
-      report_type: "Balance Sheet",
-      debit: "Debit/Credit",
+      title: "Account Name",
+      dataIndex: "name",
+      key: "name",
+      render:(text) => (
+        <span>{text == undefined  ? "N/A" : text}</span>
+      )
+    },
+
+    {
+      title: "Journal",
+      dataIndex: "type",
+      key: "type",
+      render: (text) => <span>{text} Invoice</span>,
     },
     {
-      key: "2",
-      account_name: "Bank",
-      account_type: "Bank and Cash",
-      report_type: "Balance Sheet",
-      debit: "Debit",
-    },
-    {
-      key: "3",
-      account_name: "Liquidity Transfer",
-      account_type: "Current Assets",
-      report_type: "Balance Sheet",
-      debit: "Debit",
-    },
-    {
-      key: "4",
-      account_name: "Outstanding Billing Invoice",
-      account_type: "Current Assets",
-      report_type: "Balance Sheet",
-      debit: "Debit",
-    },
-    {
-      key: "5",
-      account_name: "Inventory",
-      account_type: "Current Assets",
-      report_type: "Balance Sheet",
-      debit: "10 Downing Street",
-    },
-    {
-      key: "6",
-      account_name: "Purchases",
-      account_type: "Current Assets",
-      report_type: "Balance Sheet",
-      debit: "Debit",
-    },
-    {
-      key: "7",
-      account_name: "Prepayment",
-      account_type: "test",
-      report_type: "Balance Sheet",
-      debit: "10 Downing Street",
-    },
-    {
-      key: "8",
-      account_name: "Input Tax (VAT 12%",
-      account_type: "test",
-      report_type: "Balance Sheet",
-      debit: "10 Downing Street",
-    },
-    {
-      key: "9",
-      account_name: "Other Current Asset",
-      account_type: "test",
-      report_type: "Balance Sheet",
-      debit: "10 Downing Street",
-    },
-    {
-      key: "10",
-      account_name: "Other Non current Asset",
-      account_type: "test",
-      report_type: "Balance Sheet",
-      debit: "10 Downing Street",
-    },
-    {
-      key: "11",
-      account_name: "Output Tax (VAT 12%",
-      account_type: "test",
-      report_type: "Balance Sheet",
-      debit: "10 Downing Street",
-    },
-    {
-      key: "12",
-      account_name: "Accounts Payable",
-      account_type: "test",
-      report_type: "Balance Sheet",
-      debit: "10 Downing Street",
-    },
-    {
-      key: "12",
-      account_name: "Other Non current Liability",
-      account_type: "test",
-      report_type: "Balance Sheet",
-      debit: "10 Downing Street",
-    },
-    {
-      key: "13",
-      account_name: "Sales/Revenue",
-      account_type: "test",
-      report_type: "Balance Sheet",
-      debit: "10 Downing Street",
+      title: "Status",
+      dataIndex: "archive",
+      key: "status",
+      render: (text) => (
+        <span style={{ color: !text ? "red" : "green" }}>
+          {!text ? "Archived" : "Active"}
+        </span>
+      ),
     },
   ];
 
-  const columns = [
-    {
-      title: "Account Name",
-      dataIndex: "account_name",
-      key: "account_name",
-    },
-    {
-      title: "Account Type",
-      dataIndex: "account_type",
-      key: "account_type",
-    },
-    {
-      title: "Report Type ",
-      dataIndex: "report_type",
-      key: "report_type",
-    },
-    {
-      title: "Debit/Credit",
-      dataIndex: "debit",
-      key: "debit",
-    },
-  ];
+  const handleDateRangeChange = (range) => {
+    setDateRange(range);
+  };
+
+  
+
+  const billingData =
+    dataSource?.billing?.map((item) => ({
+      ...item,
+      type: "Billing",
+    })) || [];
+  const expenseData =
+    dataSource?.expenses?.map((item) => ({
+      ...item,
+      type: "Expense",
+    })) || [];
+
+  const combinedData = [...billingData, ...expenseData];
+  const handleSearch = (value) => {
+    setSearchText(value);
+    const filtered = combinedData.filter(
+      (item) => item.type === value
+    );
+    setFilteredData(filtered);
+  };
+  
+  const dataToDisplay = searchText ? filteredData : combinedData;
+
+  console.log(combinedData)
+
+  const menu = (
+    <Menu>
+      <Menu.Item key="1">
+        <Link to="/addBill">Add Billing</Link>
+      </Menu.Item>
+      <Menu.Item key="2">
+        <Link to="/addExpense">Add Expense</Link>
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
     <div className="pl-80 bg-gray-200  pr-80">
       <div className="pt-10">
-        <h5>Chart of Accounts</h5>
+        <h5>Journal Entries</h5>
       </div>
       <div className="pt-4 space-y-3 flex justify-between items-center">
         <div className="flex justify-between ">
-          <Input.Search />
-          <Button>New Entry</Button>
+          <Input.Search
+          allowClear
+            placeholder="Search"
+            onSearch={handleSearch}
+            style={{ marginBottom: 16 }}
+          />
+          <Dropdown overlay={menu}>
+            <Button>Add Entry</Button>
+          </Dropdown>
         </div>
-        <div>
-          <Button>Archive List</Button>
-          <DatePicker.RangePicker />
-        </div>
+        {/* <div>
+          <DatePicker.RangePicker onChange={handleDateRangeChange} />
+        </div> */}
         <div></div>
       </div>
 
       <Table
-        dataSource={dataSource}
+        className="cursor-pointer"
+        dataSource={dataToDisplay}
         columns={columns}
-        scroll={{
-          x: 3000,
-        }}
+        loading={loading}
+        scroll={{ x: 3000 }}
+        onRow={(record, rowIndex) => ({
+          onClick: () => {
+            console.log(record);
+            if (record.type === "Billing") {
+              window.location.href = `/viewbill/${record._id}?index=${rowIndex}`;
+            } else if (record.type === "Expense") {
+              window.location.href = `/expenseRecord/${record._id}`;
+            }
+          },
+        })}
       />
     </div>
   );
