@@ -612,24 +612,27 @@ apiRouters.patch("/expense/:id", async (req, res) => {
 apiRouters.post("/expenses", authToken, async (req, res) => {
   // const data = req.body;
   try {
-    const { amount, due, name } = req.body;
-
-    if (due && amount && name) {
-      const addExpenses = await new Expenses({
-        amount,
-        due,
-        account_type: "Expense",
-        name,
-        isArchive: true,
-      }).save();
-      return res.json({
-        code: 200,
-        message: "Expenses Added Successfully.",
+    const { name, due_date, payment_date, total_payment } = req.body;
+    if (!name || !due_date || !payment_date || !total_payment) {
+      return res.status(500).json({
+        status: 500,
+        message: "Missing fields are required!",
       });
     }
-    return res.status(400).json({
-      code: 400,
-      message: "Error",
+    let vat = parseInt(total_payment) * 0.12;
+    const newBilling = await new Expenses({
+      name,
+      due_date,
+      payment_date,
+      total_payment: parseInt(total_payment) + vat,
+      archive: true,
+    });
+
+    newBilling.save();
+
+    return res.status(200).json({
+      status: 200,
+      message: "Successfully added product",
     });
   } catch (err) {
     console.log(err);
@@ -958,6 +961,20 @@ apiRouters.get("/inventory/archive-list", async (req, res) => {
     const inventoryResponse = await Inventory.find({
       $or: [{ archive: false }, { archive: { $exists: false } }],
     });
+
+    res.status(200).json(inventoryResponse);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      code: 500,
+      message: "Server error.",
+    });
+  }
+});
+
+apiRouters.get("/expense/archive-list", async (req, res) => {
+  try {
+    const inventoryResponse = await Expenses.find({ archive: { $ne: true } });
 
     res.status(200).json(inventoryResponse);
   } catch (error) {

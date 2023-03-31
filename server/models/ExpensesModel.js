@@ -7,21 +7,26 @@ const expensesSchema = new Schema(
       type: String,
       required: true,
     },
-    amount: {
-      type: Number,
-      required: true,
-    },
-    due: {
+    due_date: {
       type: Date,
       required: true,
     },
-    invoice_date: {
+    payment_date: {
       type: Date,
-      default: Date.now,
+      required: true,
     },
-    isArchive: {
+
+    total_payment: {
+      type: String,
+      required: true,
+    },
+    archive: {
       type: Boolean,
       required: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   { collection: "expenses" }
