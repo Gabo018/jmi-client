@@ -203,6 +203,25 @@ export const NavBar = () => {
             <Link to="/chartAccounts" className="font-bold">
               Chart of Accounts
             </Link>
+            
+          </div>
+          <div className="flex items-between gap-2 mt-5 p-2 hover:bg-violet-500 hover:rounded-md hover:text-white">
+            <svg style={{ height: 28 }} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"></path>
+            </svg>
+            <Link to="/balanceSheet" className="font-bold">
+           Balance Sheet
+            </Link>
+            
+          </div>
+          <div className="flex items-between gap-2 mt-5 p-2 hover:bg-violet-500 hover:rounded-md hover:text-white">
+            <svg style={{ height: 28 }} fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"></path>
+            </svg>
+            <Link to="/journalEntries" className="font-bold">
+           Journal Entries
+            </Link>
+            
           </div>
         </div>
 

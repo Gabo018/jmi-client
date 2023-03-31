@@ -188,6 +188,7 @@ console.log(totalAll)
     >
    
       <div className="pt-28 pb-10">
+        <h5 className="text-center text-xl ">View Bill</h5>
         <Row gutter={24}>
           <Col xs={24} lg={8} className="bg-white p-4 ">
             <span className="font-bold text-lg">
