@@ -392,7 +392,7 @@ apiRouters.post("/addBill", async (req, res) => {
         message: "Missing fields are required!",
       });
     }
-    let vat = parseInt(amount) * 0.12;
+    let vat = parseInt(total_payment) * 0.12;
     const newBilling = await new Billing({
       name,
       due_date,
