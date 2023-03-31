@@ -49,7 +49,7 @@ export const ViewExpenses = () => {
       key: "due_date",
       render: (text) => {
         const date = moment(text);
-        const currentDate = moment();
+        const currentDate =  moment();
         const isPast = date.isBefore(currentDate, "day");
         return (
           <span className={isPast ? "text-red-500" : "text-black"}>
@@ -58,27 +58,61 @@ export const ViewExpenses = () => {
         );
       },
     },
-  
+    // {
+    //   title: "Payment Date",
+    //   key: "tags",
+    //   dataIndex: "tags",
+    //   render: (_, { tags }) => (
+    //     <>
+    //       {tags.map((tag) => {
+    //         let color = tag.length > 5 ? "geekblue" : "green";
+    //         if (tag === "loser") {
+    //           color = "volcano";
+    //         }
+    //         return (
+    //           <Tag color={color} key={tag}>
+    //             {tag.toUpperCase()}
+    //           </Tag>
+    //         );
+    //       })}
+    //     </>
+    //   ),
+    // },
     {
       title: "Discount",
       dataIndex: "discount",
       key: "discount",
       render: (text) => <>{text == undefined ? "N/A" : text}</>,
     },
-  
+    {
+      title: "Tax Excluded",
+      dataIndex: "total_payment",
+      key: "address",
+      render: (totalPayment) => {
+        const taxRate = 0.12; // 12% tax rate
+        const taxExcludedAmount = Math.round(totalPayment / (1 + taxRate));
+        const formattedAmount = taxExcludedAmount.toLocaleString();
+        return <span>₱{formattedAmount}</span>;
+      },
+    },
 
-  
+    {
+      title: "Total Payment",
+      dataIndex: "total_payment",
+      key: "total_payment",
+      
+      render: (text) => <>{text == undefined ? "N/A" : `₱${text}`}</>,
+    },
     {
       title: "Status",
-      dataIndex: "isArchive",
-      key: "isArchive",
+      dataIndex: "archive",
+      key: "archive",
       render: (text) => {
         return (
           <span className={text ? "text-green-500" : "text-red-600"}>{text  ? "Active" : "Archive"}</span>
         )
       },
     },
-   
   ];
 
   const columns = useMemo(
@@ -107,7 +141,7 @@ export const ViewExpenses = () => {
       }
     ], []
   )
-
+console.log(data)
   const tableHooks = (hooks) => {
     hooks.visibleColumns.push((columns) => [
       ...columns,
@@ -318,6 +352,11 @@ export const ViewExpenses = () => {
           <Link to='/addExpense'>
           <button className="bg-green-500 p-2 mt-5 mb-3 text-white">
             Add Expense
+          </button>
+          </Link>
+          <Link to='/archive_expense'>
+          <button className="bg-red-500 mx-2 p-2 mt-5 mb-3 text-white">
+          Archive List
           </button>
           </Link>
         <Table

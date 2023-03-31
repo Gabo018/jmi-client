@@ -20,6 +20,7 @@ import ArchiveListInventory from './pages/ArchiveListInventory';
 import ChartAccounts from './pages/ChartAccounts';
 import BalanceSheet from './pages/BalanceSheet';
 import JournalEntries from './pages/JournalEntries';
+import ArchiveListExpense from './pages/ArchiveListExpense';
 
 export const DashboardRoutes = () => {
   return (
@@ -44,6 +45,7 @@ export const DashboardRoutes = () => {
         <Route path='/chartAccounts' element={<ChartAccounts />} />
         <Route path='/balanceSheet' element={<BalanceSheet />} />
         <Route path='/journalEntries' element={<JournalEntries />} />
+        <Route path='/archive_expense' element={<ArchiveListExpense />} />
       </Routes>
     </>
   )
