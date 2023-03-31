@@ -1,300 +1,270 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
-import { useTable, useGlobalFilter } from 'react-table';
-import { addDays } from 'date-fns';
-import { Link } from 'react-router-dom'
-import moment from 'moment'
-import { DateRangePicker } from 'react-date-range'
+import React, { useMemo, useState, useRef, useEffect } from "react";
+import { Helmet } from "react-helmet";
+import { useTable, useGlobalFilter } from "react-table";
+import { addDays } from "date-fns";
+import { Link } from "react-router-dom";
+import moment from "moment";
+import { DateRangePicker } from "react-date-range";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
+import { useQuery } from "react-query";
+import { Button, Space, Table, Tag, Input, Col, Row, DatePicker } from "antd";
+import { userGetBill } from "../modules/service-viewBill";
 
 export const VieBill = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dateRange, setDateRange] = useState();
+  const [totalWithoutTax , setTotalWihoutTax] = useState();
 
-
-  // Start React Table
-  const [tableData, setTableData] = useState({ statistics: {}, data: [] });
-  const data = useMemo(() => tableData.data, [tableData])
-  console.log(tableData)
-
-  const columns = useMemo(
-    () => [
-      {
-        Header: 'Name',
-        accessor: 'name',
-      },
-      {
-        Header: 'Contact',
-        accessor: 'contact',
-      },
-      {
-        Header: 'Product Code',
-        accessor: 'productCode',
-      },
-      {
-        Header: 'Description',
-        accessor: 'productInfo[0].description',
-      },
-      {
-        Header: 'Amount',
-        accessor: 'productInfo[0].amount',
-      },
-      {
-        Header: 'Date',
-        accessor: 'date',
-        Cell: ({ value }) => moment(value).format('MMMM DD, YYYY')
-      },
-    ], []
-  )
-
-  const tableHooks = (hooks) => {
-    hooks.visibleColumns.push((columns) => [
-      ...columns,
-      {
-        id: 'Edit',
-        Header: 'ACTIONS',
-        Cell: ({ row }) => {
-          return (
-            <>
-              <button
-                className="text-red-700 hover:text-red-900 hover:shadow-lg"
-                onClick={() => onSubmitDelete(row.original._id, row.original.productCode, row.original.name)}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                  />
-                </svg>
-              </button>
-              <button className="text-green-800">
-                <Link to={row.original._id}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
-                    />
-                  </svg>
-                </Link>
-              </button>
-            </>
-          );
-        }
-      }
-    ])
-  }
-
+  const firstDateRange = dateRange && dateRange.length === 2 && moment(dateRange[0], "YYYY-MM-DD").isValid() ? Object.values(dateRange)[0] : moment().startOf('day').subtract(1, 'days');
+  const secondDateRange = dateRange && dateRange.length === 2 && moment(dateRange[1], "YYYY-MM-DD").isValid() ? Object.values(dateRange)[1] : null;
+  
+  const params = {
+    dFrom: firstDateRange ? moment(firstDateRange).format("YYYY-MM-DD") : null,
+    dTo: secondDateRange ? moment(secondDateRange).format("YYYY-MM-DD") : null,
+  };
+  
+  
   const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-    setGlobalFilter,
-    state
-  } = useTable({ columns, data }, tableHooks, useGlobalFilter)
-  const { globalFilter } = state;
-  // End React Table
+    data: dataBill,
+    isLoading,
+    
+    isError,
+  
+  } = useQuery({
+    queryKey: ["home-buyer-list", params],
+    queryFn: userGetBill(params),
+  });
 
-  // Start Date Range Picker
-  const [showPicker, setShowPicker] = useState(false);
-  const ref = useRef(null);
-  const [rangeDate, setRangeDate] = useState([
+  console.log(dataBill)
+
+  const currentYear = new Date().getFullYear() % 100;
+  const currentDate = moment();
+
+
+  const columns1 = [
     {
-      startDate: new Date('01/01/1900'),
-      endDate: new Date('01/01/3000'),
-      key: "selection",
+      title: "Payment Reference",
+      dataIndex: "name",
+      key: "name",
+      render: (params, record, index) => {
+        return `BINV/0000${index + 1}/${currentYear}`;
+      },
     },
-  ]);
-  const onSubmitDate = () => {
-    dataFetching();
-  }
-  // End Date Range Picker
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Invoice Date",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text) => {
+        return <>{text == undefined ? "N/A" : moment(text).format("LL")}</>;
+      },
+    },
+    {
+      title: "due_date",
+      dataIndex: "due_date",
+      key: "due_date",
+      render: (text) => {
+        const date = moment(text);
+        const isPast = date.isBefore(currentDate, "day");
+        return (
+          <span className={isPast ? "text-red-500" : "text-black"}>
+            {text == undefined ? "N/A " : moment(text).format("LL")}
+          </span>
+        );
+      },
+    },
+    // {
+    //   title: "Payment Date",
+    //   key: "tags",
+    //   dataIndex: "tags",
+    //   render: (_, { tags }) => (
+    //     <>
+    //       {tags.map((tag) => {
+    //         let color = tag.length > 5 ? "geekblue" : "green";
+    //         if (tag === "loser") {
+    //           color = "volcano";
+    //         }
+    //         return (
+    //           <Tag color={color} key={tag}>
+    //             {tag.toUpperCase()}
+    //           </Tag>
+    //         );
+    //       })}
+    //     </>
+    //   ),
+    // },
+    {
+      title: "Discount",
+      dataIndex: "discount",
+      key: "discount",
+      render: (text) => <>{text == undefined ? "N/A" : text}</>,
+    },
+    {
+      title: "Tax Excluded",
+      dataIndex: "total_payment",
+      key: "address",
+      render: (totalPayment) => {
+        const taxRate = 0.12; // 12% tax rate
+        const taxExcludedAmount = Math.round(totalPayment / (1 + taxRate));
+        const formattedAmount = taxExcludedAmount.toLocaleString();
+        return <span>₱{formattedAmount}</span>;
+      },
+    },
 
-  // Start FetchingAPI
-  const dataFetching = async () => {
-    try {
-      const dataResponse = await fetch(`/api/bill?dTo=${'' || moment(rangeDate[0].endDate).format('MM/DD/YYYY')}&dFrom=${'' || moment(rangeDate[0].startDate).format('MM/DD/YYYY')}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      const dataJson = await dataResponse.json()
-      console.log(dataJson)
-      setTableData(dataJson)
-    } catch (err) {
-      console.log(err)
-    }
-  }
-  // End FetchingAPI
+    {
+      title: "Total Payment",
+      dataIndex: "total_payment",
+      key: "total_payment",
+      render: (text) => <>{text == undefined ? "N/A" : `₱${text}`}</>,
+    },
+    {
+      title: "Status",
+      dataIndex: "archive",
+      key: "archive",
+      render: (text) => {
+        return (
+          <span className={text ? "text-green-500" : "text-red-600"}>{text  ? "Active" : "Archive"}</span>
+        )
+      },
+    },
+  ];
 
-  // Start Delete Product
-  const [deleteState, setDeleteState] = useState();
-  const onSubmitDelete = async (id, productCode, name) => {
-    try {
-      alert(`Name: ${name} \nProduct Code: ${productCode}`)
-      if (window.confirm('Are your sure you want to delete this Billing?')) {
-        const deleteData = await fetch(`/api/bill/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-        if (deleteData.ok) {
-          const deleteJson = await deleteData.json();
-          setDeleteState(deleteJson)
-        }
-      }
-    } catch (err) {
-      console.log(err)
-    }
+  if (isLoading) {
+    return <h5>Loading....</h5>;
   }
-  // End Delete Product
-  useEffect(() => {
-    dataFetching();
-    function handleClickOutside(event) {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setShowPicker(false);
-      }
+  if (isError) {
+    alert("Something went wrong");
+    return;
+  }
+  const data1 = dataBill.data.data;
+
+  const total = dataBill.data.statistics.total;
+
+  const totalAmount = data1.reduce((acc, curr) => {
+    const payment = parseFloat(curr.total_payment);
+    if (!isNaN(payment)) {
+      return acc + payment;
+    } else {
+      return acc;
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [ref, setShowPicker, rangeDate, deleteState]);
+  }, 0);
+
+  const sortedDataSource = data1.sort((a, b) => {
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+  const filteredData = sortedDataSource.filter((record) => record.name === searchTerm);
+  
+  const taxRate = 0.12; // 12% tax rate
+
+
+  
+  const dataSum = data1.map((item) => {
+    const total_payment = parseInt(item.total_payment)
+    return  total_payment + total_payment
+  })
+
+  function myFunc(total, num) {
+  return total + num;
+}
+
+const totalAll = data1.length != 0 ? dataSum.reduce(myFunc) : null
+const taxExcludedAmount = Math.round(totalAll / (1 + taxRate));
+  
+console.log(totalAll)
+
+  console.log("this is the filtered data", filteredData);
 
   return (
-    <div className="pl-80 pr-28 bg-gradient-to-r from-indigo-900 via-violet-500 to-indigo-400 pb-20"
+    <div
+      className="pl-80 pr-28  bg-gray-200 pb-20"
       style={{
-        minHeight: '100vh'
+        minHeight: "100vh",
       }}
     >
-      <Helmet>
-        <title>View Bill</title>
-        <meta name="view bill" content="This is the View Bill Section" />
-      </Helmet>
-      <div className="border-b-2 pb-4">
-        <h1 className="text-center text-white text-5xl font-bold">
-          View Bill
-        </h1>
+   
+      <div className="pt-28 pb-10">
+        <h5 className="text-center text-xl ">View Bill</h5>
+        <Row gutter={24}>
+          <Col xs={24} lg={8} className="bg-white p-4 ">
+            <span className="font-bold text-lg">
+              Date Range:
+            {  firstDateRange || secondDateRange ? "N/A" : `${moment(firstDateRange).format("LL")} - ${moment(secondDateRange).format("LL")} `}
+             
+            </span>
+          </Col>
+          <Col xs={24} lg={8} className="bg-white p-4">
+            <span className="font-bold text-lg">
+              Total Amount: <span className="text-red-500">₱{totalAmount}</span>{" "}
+            </span>
+          </Col>
+          <Col xs={24} lg={8} className="bg-white p-4">
+            <span className="font-bold text-lg">
+              Total Items: <span className="text-red-500">{total}</span>
+            </span>
+          </Col>
+        </Row>
       </div>
-      <div className='mt-6'>
-        <div className='flex justify-between'>
-          <div className='bg-gray-50 inventory-statistics'>
-            <p className='statistics-value'>{tableData && tableData.statistics.rangeDate?.from} - {tableData && tableData.statistics.rangeDate?.to}</p>
-            <p className='statistics-name'>Date</p>
+      <div className="pt-4 space-y-3">
+        <div className="flex gap-2 justify-between items-center">
+          <div className="flex gap-3">
+            <Link to="/addBill">
+              <Button className="bg-blue-800 text-white border-0">
+                New Invoice
+              </Button>
+            </Link>
+            <Input.Search
+              defaultValue={""}
+              allowClear
+              placeholder="Search for name, contact, email and developer"
+              onSearch={(e) => setSearchTerm(e)}
+            />
           </div>
-          <div className='bg-gray-50 inventory-statistics'>
-            <p className='statistics-value'>₱ {tableData && tableData.statistics.amount?.toFixed(2)}</p>
-            <p className='statistics-name'>Amount</p>
-          </div>
-          <div className='bg-gray-50 inventory-statistics'>
-            <p className='statistics-value'>{tableData && tableData.statistics?.total}</p>
-            <p className='statistics-name'>Total Items</p>
+          <div className="flex gap-3">
+       <Link to='/archive-list'>
+       <button className="bg-red-600 text-white p-2 rounded-md">
+          Archive List
+         </button>
+       </Link>
+            <DatePicker.RangePicker
+              onChange={(e) => setDateRange(e)}
+              value={dateRange}
+            />
           </div>
         </div>
-        <div className='flex justify-between'>
-          <input
-            type='text'
-            name='search'
-            placeholder='Search data'
-            className='input'
-            value={globalFilter || ''}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-          />
-          <button
-            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded'
-            onClick={() => setShowPicker(true)}
-          >
-            Filter Date
-          </button>
-
-          {showPicker && (
-            <div
-              style={{
-                position: "absolute",
-                right: "10%",
-                border: "1px solid black",
-                zIndex: 1,
-                visibility: showPicker ? "visible" : "hidden",
-                backgroundColor: "white",
-                boxShadow: "5px 10px #888888",
+        <Row>
+          <Col xl={24}>
+            <Table
+            className="cursor-pointer "
+              style={{ zIndex: "10000" }}
+              rowKey="id"
+              // rowSelection={rowSelection}
+              columns={columns1}
+              dataSource={searchTerm ? filteredData : sortedDataSource}
+              pagination={{
+                position: ["bottomCenter"],
               }}
-              ref={ref}
-            >
-              <DateRangePicker
-                onChange={(item) => setRangeDate([item.selection])}
-                showSelectionPreview={true}
-                moveRangeOnFirstSelection={false}
-                ranges={rangeDate}
-                direction="vertical"
-              />
-            </div>
-          )}
-
-        </div>
-
-
-
-
-        <table {...getTableProps()} className='border-collapse border-b border-x-transparent border-slate-400  bg-white mt-8' style={{ width: '100%' }}>
-          <thead>
-            {
-              headerGroups.map(headerGroup => (
-
-                <tr {...headerGroup.getHeaderGroupProps()} className='text-violet-600'>
-                  {
-                    headerGroup.headers.map(column => (
-
-                      <th {...column.getHeaderProps()} className='border-b border-slate-300 p-2'>
-                        {
-                          column.render('Header')}
-                      </th>
-                    ))}
-                </tr>
-              ))}
-          </thead>
-
-          <tbody {...getTableBodyProps()}>
-            {
-              rows.map(row => {
-
-                prepareRow(row)
-                return (
-
-                  <tr {...row.getRowProps()} className='border-b border-slate-300 odd:bg-zinc-300'>
-                    {
-                      row.cells.map(cell => {
-
-                        return (
-                          <td {...cell.getCellProps()} className='text-center text-sm p-2'>
-                            {
-                              cell.render('Cell')}
-                          </td>
-                        )
-                      })}
-                  </tr>
-                )
-              })}
-          </tbody>
-        </table>
+              onRow={(record, rowIndex) => {
+ 
+                return {
+                  onClick: () => {
+                    window.location.href = `/viewbill/${record._id}?index=${rowIndex + 1  }`;
+                  },
+                };
+              }}
+              scroll={{
+                x: 2000,
+              }}
+            />
+            <h5>Total Payment (without tax) : ₱{totalAll} </h5>
+            <h5>Total Payment (with tax) : ₱{taxExcludedAmount}  </h5>
+          </Col>
+        </Row>
       </div>
     </div>
-  )
-}
+  );
+};

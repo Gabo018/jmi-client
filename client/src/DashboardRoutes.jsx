@@ -15,6 +15,11 @@ import { AddInventory } from './pages/AddInventory';
 import { ViewInventory } from './pages/ViewInventory';
 import { EditInventory } from './pages/EditInventory';
 import { EditBill } from './pages/EditBill';
+import ArchiveList from './pages/ArchiveList';
+import ArchiveListInventory from './pages/ArchiveListInventory';
+import ChartAccounts from './pages/ChartAccounts';
+import BalanceSheet from './pages/BalanceSheet';
+import JournalEntries from './pages/JournalEntries';
 
 export const DashboardRoutes = () => {
   return (
@@ -34,6 +39,11 @@ export const DashboardRoutes = () => {
         <Route path="/addInventory" element={<AddInventory />} />
         <Route path="/viewInventory" element={<ViewInventory />} />
         <Route path='/viewInventory/:id' element={<EditInventory />} />
+        <Route path='/archive-list-inventory' element={<ArchiveListInventory />} />
+        <Route path='/archive-list' element={<ArchiveList />} />
+        <Route path='/chartAccounts' element={<ChartAccounts />} />
+        <Route path='/balanceSheet' element={<BalanceSheet />} />
+        <Route path='/journalEntries' element={<JournalEntries />} />
       </Routes>
     </>
   )
