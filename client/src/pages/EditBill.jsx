@@ -22,6 +22,8 @@ import { useMutation, useQuery } from "react-query";
 import { userDeleteBill } from "../modules/service-deleteBill";
 import { userGetInventoryList } from "../modules/server-viewInventory";
 import { userAddBoughtProduct } from "../modules/services-addBoughtProduct";
+import { userGetBoughtProduct } from "../modules/service-getBoughtProduct";
+import { userUpdateBill } from "../modules/service-editBillDetails";
 
 export const EditBill = () => {
   const [form] = Form.useForm();
@@ -42,9 +44,15 @@ export const EditBill = () => {
     queryKey: "user-data",
     queryFn: userGetData(id),
   });
-
+  const { data: listBoughtProduct } = useQuery({
+    queryKey: "bought-product-list",
+    queryFn: userGetBoughtProduct(id),
+  });
   const { mutate } = useMutation(userDeleteBill);
-  const {mutate:AddProductBought} = useMutation(userAddBoughtProduct)
+
+  const { mutate: AddProductBought } = useMutation(userAddBoughtProduct);
+  
+  const {mutate:UpdateBillDetails} = useMutation(userUpdateBill)
 
   const {
     data: InventoryProductList,
@@ -70,47 +78,45 @@ export const EditBill = () => {
     );
   }
 
-  console.log(InventoryProductList);
-
   const userData = data.data.data;
   const inventoryData = InventoryProductList.data.data;
+  const boughtProductList = listBoughtProduct.data.data;
 
   const onSubmitDataAddProductBought = (values) => {
-    console.log("this is the value" , values)
     const params = {
       user_bought: id,
       product_name: values.product_name,
       quantity_items_bought: values.quantity_items_bought,
-      mode_of_payment:values.mode_of_payment,
-      product_id:productId,
-      price_of_product:productAmount
+      mode_of_payment: values.mode_of_payment,
+      product_id: productId,
+      price_of_product: productAmount,
+      account_type: values.account_type,
+      discount: values.discount == null ? null : values.discount.toString(),
     };
-    console.log("this is the params" , params)
-AddProductBought(params ,
-  {
-    onSuccess:() => {
-      form.setFieldsValue({
-        product_name: null,
-        mode_of_payment:null,
-        price_of_product:null,
-        quantity_items_bought:null
-      });
-     
-     
-      console.log("success")
-      notification.success({
-        message:"Success" , 
-        description:"Product Added Successfully"
-      })
-    },
-    onError:() => {
-      notification.error({
-        message:"Error" , 
-        description:"Something went wrong"
-      })
-    }
-  })
-   
+
+    AddProductBought(params, {
+      onSuccess: () => {
+        form.setFieldsValue({
+          product_name: null,
+          mode_of_payment: null,
+          price_of_product: null,
+          quantity_items_bought: null,
+          discount: null,
+          account_type: null,
+        });
+
+        notification.success({
+          message: "Success",
+          description: "Product Added Successfully",
+        });
+      },
+      onError: () => {
+        notification.error({
+          message: "Error",
+          description: "Something went wrong",
+        });
+      },
+    });
   };
 
   const handleChangeAddProduct = (productDetails) => {
@@ -122,8 +128,28 @@ AddProductBought(params ,
     });
   };
 
-  const onSubmit = (values) => {
-    console.log(values);
+  const onSubmitUpdateBillDetails = (values) => {
+    const params = {
+      id:id,
+      name: values.name,
+      due_date: values.due_date,
+      payment_date: values.payment_date,
+    };
+    UpdateBillDetails(params , {
+      onSuccess: () => {
+        form.resetFields();
+        notification.success({
+          message: "Success",
+          description: "Update details successfully",
+        });
+      },
+      onError: () => {
+        notification.error({
+          message: "Failed",
+          description: "Something went wrong",
+        });
+      },
+    })
   };
 
   const handleShowReceipt = () => {
@@ -186,59 +212,70 @@ AddProductBought(params ,
   const columns1 = [
     {
       title: "Product",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "product_name",
+      key: "product_name",
       render: (text) => <a>{text}</a>,
     },
     {
       title: "Account",
-      dataIndex: "age",
-      key: "age",
+      dataIndex: "account_type",
+      key: "account_type",
     },
     {
       title: "Quantity",
-      dataIndex: "address",
-      key: "address",
+      dataIndex: "quantity_items_bought",
+      key: "quantity_items_bought",
     },
     {
       title: "Mode of Payment",
-      key: "tags",
-      dataIndex: "tags",
-      render: (_, { tags }) => (
-        <>
-          {tags.map((tag) => {
-            let color = tag.length > 5 ? "geekblue" : "green";
-            if (tag === "loser") {
-              color = "volcano";
-            }
-            return (
-              <Tag color={color} key={tag}>
-                {tag.toUpperCase()}
-              </Tag>
-            );
-          })}
-        </>
-      ),
+      key: "mode_of_payment",
+      dataIndex: "mode_of_payment",
     },
     {
       title: "Untaxed Price",
-      dataIndex: "address",
-      key: "address",
+      dataIndex: "quantity_items_bought",
+      key: "quantity_items_bought",
+      render: (quantity, record) => {
+        console.log(record);
+        const unitPrice = Number(record.price_of_product);
+        const discount = record.discount; // assuming the discount value is stored in a field named "discount"
+        let untaxedPrice = 0;
+        if (!isNaN(quantity) && !isNaN(unitPrice)) {
+          const subtotal = unitPrice * Number(quantity);
+          untaxedPrice = subtotal / 1.12; // dividing by 1.12 to remove the 12% tax
+          if (discount != undefined && discount > 0) {
+            // check if there is a discount
+            const discountAmount = subtotal * (discount / 100);
+            untaxedPrice = (subtotal - discountAmount) / 1.12; // calculate the discounted untaxed price
+          }
+        }
+        return <span>{untaxedPrice.toFixed(2)}</span>; // rounding to 2 decimal places
+      },
     },
+
     {
       title: "Discount",
-      dataIndex: "address",
-      key: "address",
+      dataIndex: "discount",
+      key: "discount",
+      render: (text) => {
+        return text != undefined ? text : "N/A";
+      },
     },
     {
       title: "Output Tax%",
-      dataIndex: "address",
-      key: "address",
+      dataIndex: "price_of_product",
+      key: "price_of_product",
+      render: () => "12%",
     },
     {
       title: "Subtotal",
-      dataIndex: "address",
-      key: "address",
+      dataIndex: "price_of_product",
+      key: "price_of_product",
+      render: (price, record) => {
+        const subTotal = price * parseInt(record.quantity_items_bought);
+
+        return <span>{Math.trunc(subTotal)} PHP</span>;
+      },
     },
   ];
   const data1 = [
@@ -266,6 +303,7 @@ AddProductBought(params ,
   ];
 
   const initialValues = {
+    name: userData.name,
     invoice_date: userData.createdAt
       ? moment(userData?.createdAt, "YYYY/MM/DD")
       : null,
@@ -286,12 +324,16 @@ AddProductBought(params ,
               BINV/0000{index}/{currentYear}
             </span>
             <br />
-            <small
-              className=" text-center mx-auto text-capitalize fw-semibold"
-              style={{ color: "#000fff" }}
+            <Form
+              form={form}
+              initialValues={{
+                ...initialValues,
+              }}
             >
-              {userData.name}
-            </small>
+              <Form.Item name="name">
+                <Input className="w-full" />
+              </Form.Item>
+            </Form>
             <small
               className=" text-center mx-auto text-capitalize fw-semibold"
               style={{ color: "#000fff" }}
@@ -312,7 +354,7 @@ AddProductBought(params ,
           <section className="px-8 ">
             <Form
               form={form}
-              onFinish={onSubmit}
+              onFinish={onSubmitUpdateBillDetails}
               initialValues={{
                 ...initialValues,
               }}
@@ -374,7 +416,7 @@ AddProductBought(params ,
               rowKey="id"
               // rowSelection={rowSelection}
               columns={columns1}
-              dataSource={data1}
+              dataSource={boughtProductList}
               pagination={{
                 position: ["bottomCenter"],
               }}
@@ -398,7 +440,7 @@ AddProductBought(params ,
               onClick={form.submit}
               className="bg-green-500 hover:bg-blue-700 p-2 text-white d  px-4 rounded"
             >
-              Save
+              Save User Details
             </button>
             <button
               className="bg-blue-500 hover:bg-blue-700 p-2 text-white d  px-4 rounded"
@@ -449,6 +491,17 @@ AddProductBought(params ,
             price_of_product: productAmount,
           }}
         >
+          <Form.Item name="account_type" label="Account Type">
+            <Select>
+              <Select.Option value="Sales/Revenue">Sales/Revenue</Select.Option>
+              <Select.Option value="Accounts Receivable">
+                Accounts Recievable
+              </Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name="discount" label="discount">
+            <InputNumber style={{ width: "100%" }} />
+          </Form.Item>
           <Form.Item name="product_name" label="Product Name">
             <Select
               onChange={(value) => {
@@ -459,19 +512,36 @@ AddProductBought(params ,
               }}
             >
               {inventoryData.map((item, index) => (
-                <Select.Option value={item.name} key={item.name} product={item}>
-                  {item.name}
+                <Select.Option
+                  value={item.name}
+                  key={item.name}
+                  product={item}
+                  disabled={item.quantity === "0"}
+                  style={item.quantity === "0" ? { color: "grey" } : null}
+                >
+                  {item.quantity === "0" ? (
+                    <span className="text-gray-500">
+                      {item.name} - Out of Stock
+                    </span>
+                  ) : (
+                    item.name
+                  )}
                 </Select.Option>
               ))}
             </Select>
           </Form.Item>
           <Form.Item name="mode_of_payment" label="Mode of Payment">
-          <Select>
-  <Select.Option key="E-Payment" value="E-Payment">E-Payment</Select.Option>
-  <Select.Option key="Cash" value="Cash">Cash</Select.Option>
-  <Select.Option key="Bank" value="Bank">Bank</Select.Option>
-</Select>
-
+            <Select>
+              <Select.Option key="E-Payment" value="E-Payment">
+                E-Payment
+              </Select.Option>
+              <Select.Option key="Cash" value="Cash">
+                Cash
+              </Select.Option>
+              <Select.Option key="Bank" value="Bank">
+                Bank
+              </Select.Option>
+            </Select>
           </Form.Item>
           <Form.Item name="quantity_items_bought" label="Product Quantity">
             <InputNumber style={{ width: "100%" }} />

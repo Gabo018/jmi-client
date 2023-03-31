@@ -284,6 +284,8 @@ apiRouters.post("/bill/bought-product", async (req, res) => {
       mode_of_payment,
       product_id,
       price_of_product,
+      account_type,
+      discount,
     } = req.body;
 
     // Check if all required fields are present
@@ -293,7 +295,8 @@ apiRouters.post("/bill/bought-product", async (req, res) => {
       !quantity_items_bought ||
       !mode_of_payment ||
       !product_id ||
-      !price_of_product
+      !price_of_product ||
+      !account_type
     ) {
       return res.status(400).json({
         status: 400,
@@ -338,6 +341,8 @@ apiRouters.post("/bill/bought-product", async (req, res) => {
       mode_of_payment,
       product_id,
       price_of_product,
+      account_type,
+      discount,
       createdAt: moment(),
     });
 
@@ -524,29 +529,20 @@ apiRouters.get("/bill", async (req, res) => {
   }
 });
 
-apiRouters.put("/viewBill/:id", async (req, res) => {
+apiRouters.patch("/bill-edit/:id", async (req, res) => {
   try {
-    const { name, date, contact } = req.body;
+    const { name, due_date, payment_date, total_payment } = req.body;
     const { id } = req.params;
-    const updateBIlling = await Billing.update(
+    const updateBill = await Billing.updateOne(
       { _id: id },
-      { name, date, contact }
+      { name, due_date, payment_date, total_payment }
     );
-    res.json(updateBIlling);
+    res.json(updateBill);
   } catch (err) {
     console.log(err);
   }
 });
 
-apiRouters.delete("/bill/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const deleteBill = await Billing.deleteOne({ _id: id });
-    res.json(deleteBill);
-  } catch (err) {
-    console.log(err);
-  }
-});
 // End Bill Routers
 
 // Start Expenses Routers

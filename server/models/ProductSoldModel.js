@@ -12,6 +12,14 @@ const productSchema = new Schema(
       type: String,
       required: true,
     },
+    account_type: {
+      type: String,
+      required: true,
+    },
+    discount: {
+      type: String,
+      required: false,
+    },
     quantity_items_bought: {
       type: String,
       required: true,
