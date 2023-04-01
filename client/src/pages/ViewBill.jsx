@@ -157,7 +157,7 @@ export const VieBill = () => {
   const sortedDataSource = data1.sort((a, b) => {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
-  const filteredData = sortedDataSource.filter((record) => record.name.includes(searchTerm));
+  const filteredData = sortedDataSource.filter((record) => record?.name?.includes(searchTerm));
   
   const taxRate = 0.12; // 12% tax rate
 
