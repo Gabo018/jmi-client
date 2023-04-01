@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
+import { notification } from 'antd';
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -24,6 +25,10 @@ export const Login = () => {
     const responseJson = await response.json();
     setError(responseJson)
     if (responseJson.token) {
+      notification.success({
+        message:"Success",
+      description:"Successfully login"
+      })
       localStorage.setItem('token', responseJson.token)
       navigate('/index');
     }

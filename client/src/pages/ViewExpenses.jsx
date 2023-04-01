@@ -7,7 +7,7 @@ import moment from 'moment'
 import { DateRangePicker } from 'react-date-range'
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
-import { Table, notification } from "antd";
+import { Table, notification , Input } from "antd";
 import { userDeleteExpense } from "../modules/service-editArchiveExpense";
 import { useMutation } from "react-query";
 
@@ -17,9 +17,24 @@ export const ViewExpenses = () => {
 
   // Start React Table
   const [tableData, setTableData] = useState({ statistics: {}, data: [] });
+  const [searchTerm , setSearchTerm] = useState("");
+
   const data = useMemo(() => tableData.data, [tableData]
   )
+  console.log(tableData)
 
+  function myFunc(total, num) {
+    return total + num;
+  }
+  const taxRate = 0.12;
+   
+  const dataSum = data.map((item) => {
+    const total_payment = parseInt(item.total_payment)
+    return  total_payment + total_payment
+  })
+
+  const totalAll = data.length != 0 ? dataSum.reduce(myFunc) : null
+  const taxExcludedAmount = Math.round(totalAll / (1 + taxRate));
 
   const columns1 = [
     {
@@ -141,7 +156,7 @@ export const ViewExpenses = () => {
       }
     ], []
   )
-console.log(data)
+
   const tableHooks = (hooks) => {
     hooks.visibleColumns.push((columns) => [
       ...columns,
@@ -274,6 +289,12 @@ console.log(data)
     };
   }, [ref, setShowPicker, rangeDate, deleteState]);
 
+  const sortedDataSource = data.sort((a, b) => {
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+
+  const filteredData = sortedDataSource.filter((record) => record.name.includes(searchTerm));
+
   return (
     <div className="pl-80 pr-28 bg-gradient-to-r from-indigo-900 via-violet-500 to-indigo-400 pb-20"
       style={{
@@ -296,7 +317,7 @@ console.log(data)
             <p className='statistics-name'>Date</p>
           </div>
           <div className='bg-gray-50 inventory-statistics'>
-            <p className='statistics-value'>₱ {tableData && tableData.statistics.amount?.toFixed(2)}</p>
+            <p className='statistics-value'>₱ {totalAll}</p>
             <p className='statistics-name'>Amount</p>
           </div>
           <div className='bg-gray-50 inventory-statistics'>
@@ -305,14 +326,13 @@ console.log(data)
           </div>
         </div>
         <div className='flex justify-between'>
-          <input
-            type='text'
-            name='search'
-            placeholder='Search data'
-            className='input'
-            value={globalFilter || ''}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-          />
+        <Input.Search
+        style={{ width:"500px" }}
+              defaultValue={""}
+              allowClear
+              placeholder="Search for name, contact, email and developer"
+              onSearch={(e) => setSearchTerm(e)}
+            />
           <button
             className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded'
             onClick={() => setShowPicker(true)}
@@ -365,7 +385,7 @@ console.log(data)
               rowKey="id"
               // rowSelection={rowSelection}
               columns={columns1}
-              dataSource={data}
+              dataSource={searchTerm ? filteredData : sortedDataSource}
            
               pagination={{
                 position: ["bottomCenter"],
@@ -383,6 +403,10 @@ console.log(data)
               }}
             />
         </div>
+       <div className=" text-white p-4 w-25">
+       <h5 className="text-white">Total Payment (without tax) : ₱{totalAll} </h5>
+            <h5 className="text-white">Total Payment (with tax) : ₱{taxExcludedAmount}  </h5>
+       </div>
       </div>
     </div>
   );
