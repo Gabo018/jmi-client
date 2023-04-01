@@ -90,8 +90,9 @@ export const EditBill = () => {
       quantity_items_bought: values.quantity_items_bought,
       mode_of_payment: values.mode_of_payment,
       product_id: productId,
-      price_of_product: productAmount,
+      price_of_product: productAmount == undefined ? values.price_of_product : productAmount ,
       account_type: values.account_type,
+      tax:values.tax,
       discount: values.discount == null ? null : values.discount.toString(),
     };
 
@@ -250,10 +251,9 @@ export const EditBill = () => {
             untaxedPrice = (subtotal - discountAmount) / 1.12; // calculate the discounted untaxed price
           }
         }
-        return <span>{untaxedPrice.toFixed(2)}</span>; // rounding to 2 decimal places
+        return <span>{record.tax ? untaxedPrice.toFixed(2) : record.price_of_product}</span>; // rounding to 2 decimal places
       },
     },
-
     {
       title: "Discount",
       dataIndex: "discount",
@@ -264,9 +264,13 @@ export const EditBill = () => {
     },
     {
       title: "Output Tax%",
-      dataIndex: "price_of_product",
-      key: "price_of_product",
-      render: () => "12%",
+      dataIndex: "tax",
+      key: "tax",
+      render: (text) => {
+       return(
+        text ? "12%" : "N/A"
+       )
+      },
     },
     {
       title: "Subtotal",
@@ -469,6 +473,17 @@ export const EditBill = () => {
             price_of_product: productAmount,
           }}
         >
+           <Form.Item name="tax" label="Tax">
+            <Select>
+              <Select.Option key={true} value={true}>
+              True
+              </Select.Option>
+              <Select.Option key={true} value={false}>
+             False
+              </Select.Option>
+             
+            </Select>
+          </Form.Item>
           <Form.Item name="account_type" label="Account Type">
             <Select>
               <Select.Option value="Sales/Revenue">Sales/Revenue</Select.Option>
