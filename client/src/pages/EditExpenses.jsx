@@ -222,7 +222,7 @@ const boughtProductList = listBoughtProduct.data.data;
 
 const columns1 = [
   {
-    title: "Product",
+    title: "Expense",
     dataIndex: "product_name",
     key: "product_name",
     render: (text) => <a>{text}</a>,
@@ -496,16 +496,23 @@ const columns1 = [
         >
           <Form.Item name="account_type" label="Account Type">
             <Select>
-              <Select.Option value="Sales/Revenue">Sales/Revenue</Select.Option>
+            <Select.Option value="Insurance Expenses">Insurance Expenses</Select.Option>
+            <Select.Option value="Retirement Expenses">Retirement Expenses</Select.Option>
+            <Select.Option value="Sick Leave Expenses">Sick Leave Expenses</Select.Option>
+            <Select.Option value="Vacation Leave Expenses">Vacation Leave Expenses</Select.Option>
+            <Select.Option value="Utilities Expenses">Utilities Expenses</Select.Option>
+            <Select.Option value="Supplies Expenses">Supplies Expenses</Select.Option>
+            <Select.Option value="Miscellaneous Expenses">Miscellaneous Expenses</Select.Option>
+              {/* <Select.Option value="Sales/Revenue">Sales/Revenue</Select.Option>
               <Select.Option value="Accounts Receivable">
                 Accounts Receivable
-              </Select.Option>
+              </Select.Option> */}
             </Select>
           </Form.Item>
           <Form.Item name="discount" label="discount">
             <InputNumber style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item name="product_name" label="Product Name">
+          <Form.Item name="product_name" label="Product">
             <Select
               onChange={(value) => {
                 const selectedProduct = inventoryData.find(
