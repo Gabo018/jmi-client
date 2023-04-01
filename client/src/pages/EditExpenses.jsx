@@ -127,11 +127,12 @@ export const EditExpenses = () => {
       quantity_items_bought: values.quantity_items_bought,
       mode_of_payment: values.mode_of_payment,
       product_id: productId,
-      price_of_product: productAmount,
+      price_of_product: productAmount == undefined ? values.price_of_product : productAmount ,
       account_type: values.account_type,
+      tax:values.tax,
       discount: values.discount == null ? null : values.discount.toString(),
     };
-
+console.log("this is the params" , params)
     AddProductBought(params, {
       onSuccess: () => {
         form.setFieldsValue({
@@ -172,18 +173,7 @@ export const EditExpenses = () => {
     )
   }
   console.log(listBoughtProduct)
-  // const initialValues = {
-  //   name: expenseData.name,
-  //   invoice_date: expenseData.createdAt
-  //     ? moment(expenseData?.createdAt, "YYYY/MM/DD")
-  //     : null,
-  //   due_date: expenseData.due_date
-  //     ? moment(expenseData?.due_date, "YYYY/MM/DD")
-  //     : null,
-  //   payment_date: expenseData.payment_date
-  //     ? moment(expenseData?.payment_date, "YYYY/MM/DD")
-  //     : null,
-  // };
+  
   const modalContent = (
     <div className="bg-gray-100 border-2 border-black p-5">
       <div className="flex flex-col space-y-2 mt-5">
@@ -260,7 +250,7 @@ const columns1 = [
           untaxedPrice = (subtotal - discountAmount) / 1.12; // calculate the discounted untaxed price
         }
       }
-      return <span>{untaxedPrice.toFixed(2)}</span>; // rounding to 2 decimal places
+      return <span>{record.tax ? untaxedPrice.toFixed(2) : record.price_of_product}</span>; // rounding to 2 decimal places
     },
   },
 
@@ -274,9 +264,13 @@ const columns1 = [
   },
   {
     title: "Output Tax%",
-    dataIndex: "price_of_product",
-    key: "price_of_product",
-    render: () => "12%",
+    dataIndex: "tax",
+    key: "tax",
+    render: (text) => {
+     return(
+      text ? "12%" : "N/A"
+     )
+    },
   },
   {
     title: "Subtotal",
@@ -304,6 +298,7 @@ const columns1 = [
       : null,
   };
 
+  console.log(boughtProductList)
   
   const currentYear = new Date().getFullYear() % 100;
   return (
@@ -513,31 +508,17 @@ const columns1 = [
             <InputNumber style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item name="product_name" label="Product">
-            <Select
-              onChange={(value) => {
-                const selectedProduct = inventoryData.find(
-                  (product) => product.name === value
-                );
-                handleChangeAddProduct(selectedProduct);
-              }}
-            >
-              {inventoryData.map((item, index) => (
-                <Select.Option
-                  value={item.name}
-                  key={item.name}
-                  product={item}
-                  disabled={item.quantity === "0"}
-                  style={item.quantity === "0" ? { color: "grey" } : null}
-                >
-                  {item.quantity === "0" ? (
-                    <span className="text-gray-500">
-                      {item.name} - Out of Stock
-                    </span>
-                  ) : (
-                    item.name
-                  )}
-                </Select.Option>
-              ))}
+          <Input className='w-100' />
+          </Form.Item>
+          <Form.Item name="tax" label="Tax">
+            <Select>
+              <Select.Option key={true} value={true}>
+              True
+              </Select.Option>
+              <Select.Option key={true} value={false}>
+             False
+              </Select.Option>
+             
             </Select>
           </Form.Item>
           <Form.Item name="mode_of_payment" label="Mode of Payment">
@@ -557,10 +538,10 @@ const columns1 = [
             <InputNumber style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item name="price_of_product" label="Price">
-            {console.log("Product amount", productAmount)}
+
             <InputNumber
-              value={productAmount}
-              disabled
+              
+          
               style={{ width: "100%" }}
             />
           </Form.Item>
