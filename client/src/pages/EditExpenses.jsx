@@ -219,9 +219,7 @@ const expenseData = getExpenseData.data
 const inventoryData = InventoryProductList.data.data;
 const boughtProductList = listBoughtProduct.data.data;
 
-const sortedDataSource = boughtProductList.sort((a, b) => {
-  return new Date(b.createdAt) - new Date(a.createdAt);
-});
+
 const columns1 = [
   {
     title: "Product",

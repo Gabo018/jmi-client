@@ -652,7 +652,7 @@ apiRouters.get("/expenses", async (req, res) => {
       });
       return res.json({
         statistics: {
-          amount: retrieveExpenses.reduce((acc, val) => acc + val.amount, 0),
+          amount: retrieveExpenses.reduce((acc, val) => acc + val.total_payment, 0),
           total: retrieveExpenses.length,
           rangeDate: {
             from: dFrom,
