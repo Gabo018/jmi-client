@@ -166,9 +166,8 @@ apiRouters.post("/forgot", async (req, res) => {
               We have received a request to reset the password for your account.To set a new password, please click on the following link:
               <br>
               <br>
-              <a href='http://${
-                process.env.CLIENT_DOMAIN + "/new-password?token=" + forgotToken
-              }'>Reset Password Link</a>
+              <a href='http://${process.env.CLIENT_DOMAIN + "/new-password?token=" + forgotToken
+        }'>Reset Password Link</a>
               <br>
               <br>
 
@@ -678,18 +677,15 @@ apiRouters.get("/expenses/:id", authToken, async (req, res) => {
   }
 });
 
-apiRouters.put("/expenses/:id", authToken, async (req, res) => {
+apiRouters.patch("/expenses/:id", authToken, async (req, res) => {
   try {
+    const { name, due_date, payment_date, total_payment } = req.body;
     const { id } = req.params;
-    const { deductionType, description, amount, date } = req.body;
-    const updateExpenses = await Expenses.update(
+    const updateExpense = await Expenses.updateOne(
       { _id: id },
-      { deductionType, description, amount, date }
+      { name, due_date, payment_date, total_payment }
     );
-    res.json({
-      code: 200,
-      message: "Updated Successfully.",
-    });
+    res.json(updateExpense);
   } catch (err) {
     console.log(err);
   }

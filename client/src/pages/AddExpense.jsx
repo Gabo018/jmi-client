@@ -17,7 +17,7 @@ export const AddExpense = () => {
         form.resetFields();
         notification.success({
           message: "Success",
-          description: "Billing Added",
+          description: "Expense Added",
         });
       },
       onError:() => {
@@ -38,7 +38,7 @@ export const AddExpense = () => {
   return (
     <div className="flex flex-col justify-center items-center pl-80 pr-28 bg-gray-200 h-screen">
       <div className="py-5">
-        <h5 className="font-bold text-2xl">Add Bill</h5>
+        <h5 className="font-bold text-2xl">Add Expense</h5>
       </div>
       <Form
         className="position-relative overflow-y-scroll bg-gray-200 max-h-[550px] p-4"

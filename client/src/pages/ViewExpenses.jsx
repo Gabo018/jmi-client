@@ -20,6 +20,18 @@ export const ViewExpenses = () => {
   const data = useMemo(() => tableData.data, [tableData]
   )
 
+  function myFunc(total, num) {
+    return total + num;
+  }
+  const taxRate = 0.12;
+   
+  const dataSum = data.map((item) => {
+    const total_payment = parseInt(item.total_payment)
+    return  total_payment + total_payment
+  })
+
+  const totalAll = data.length != 0 ? dataSum.reduce(myFunc) : null
+  const taxExcludedAmount = Math.round(totalAll / (1 + taxRate));
 
   const columns1 = [
     {
@@ -274,6 +286,10 @@ console.log(data)
     };
   }, [ref, setShowPicker, rangeDate, deleteState]);
 
+  const sortedDataSource = data.sort((a, b) => {
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+
   return (
     <div className="pl-80 pr-28 bg-gradient-to-r from-indigo-900 via-violet-500 to-indigo-400 pb-20"
       style={{
@@ -365,7 +381,7 @@ console.log(data)
               rowKey="id"
               // rowSelection={rowSelection}
               columns={columns1}
-              dataSource={data}
+              dataSource={sortedDataSource}
            
               pagination={{
                 position: ["bottomCenter"],
@@ -383,6 +399,10 @@ console.log(data)
               }}
             />
         </div>
+       <div className=" text-white p-4 w-25">
+       <h5 className="text-white">Total Payment (without tax) : ₱{totalAll} </h5>
+            <h5 className="text-white">Total Payment (with tax) : ₱{taxExcludedAmount}  </h5>
+       </div>
       </div>
     </div>
   );

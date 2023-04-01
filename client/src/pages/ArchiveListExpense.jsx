@@ -17,6 +17,7 @@ const ArchiveListExpense = () => {
         queryFn: userGetListExpense()
       });
       const {mutate } = useMutation(userDeleteExpense)
+
       const handleRestore = (id) => {
         mutate(id , {
           onSuccess:() => {
@@ -151,7 +152,7 @@ const ArchiveListExpense = () => {
             key: "archive",
             render: (text , record) => {
               return (
-               <button className="bg-green-500 p-1" onClick={() => handleRestore(record.id)}>
+               <button className="bg-green-500 p-1" onClick={() => handleRestore(record._id)}>
                 Restore
                </button>
               )
