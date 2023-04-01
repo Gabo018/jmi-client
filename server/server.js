@@ -285,6 +285,7 @@ apiRouters.post("/bill/bought-product", async (req, res) => {
       price_of_product,
       account_type,
       discount,
+      tax
     } = req.body;
 
     // Check if all required fields are present
@@ -293,9 +294,9 @@ apiRouters.post("/bill/bought-product", async (req, res) => {
       !product_name ||
       !quantity_items_bought ||
       !mode_of_payment ||
-      !product_id ||
-      !price_of_product ||
-      !account_type
+      !account_type ||
+      !price_of_product
+
     ) {
       return res.status(400).json({
         status: 400,
@@ -303,34 +304,36 @@ apiRouters.post("/bill/bought-product", async (req, res) => {
       });
     }
 
-    // Find the product in the inventory model
-    const product = await Inventory.findById(product_id);
-    if (!product) {
-      return res.status(404).json({
-        status: 404,
-        message: "Product not found in inventory",
-      });
+    if (product_id) {
+      // Find the product in the inventory model
+      const product = await Inventory.findById(product_id);
+      if (!product) {
+        return res.status(404).json({
+          status: 404,
+          message: "Product not found in inventory",
+        });
+      }
+
+      let productQuantity = parseInt(product.quantity);
+      let productQuantityBought = parseInt(quantity_items_bought);
+
+      // Check if there is enough quantity in stock to fulfill the order
+      if (productQuantity < productQuantityBought) {
+        return res.status(400).json({
+          status: 400,
+          message: "Insufficient quantity in stock",
+        });
+      }
+
+      // Subtract the quantity bought from the current quantity in stock
+      productQuantity -= productQuantityBought;
+
+      await Inventory.findByIdAndUpdate(
+        product_id,
+        { quantity: productQuantity },
+        { new: true }
+      );
     }
-
-    let productQuantity = parseInt(product.quantity);
-    let productQuantityBought = parseInt(quantity_items_bought);
-
-    // Check if there is enough quantity in stock to fulfill the order
-    if (productQuantity < productQuantityBought) {
-      return res.status(400).json({
-        status: 400,
-        message: "Insufficient quantity in stock",
-      });
-    }
-
-    // Subtract the quantity bought from the current quantity in stock
-    productQuantity -= productQuantityBought;
-
-    await Inventory.findByIdAndUpdate(
-      product_id,
-      { quantity: productQuantity },
-      { new: true }
-    );
 
     // Create a new bill for the purchase
     const newBoughtProduct = await new ProductSoldModel({
@@ -342,6 +345,7 @@ apiRouters.post("/bill/bought-product", async (req, res) => {
       price_of_product,
       account_type,
       discount,
+      tax,
       createdAt: moment(),
     });
 

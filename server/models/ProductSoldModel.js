@@ -28,9 +28,13 @@ const productSchema = new Schema(
       type: String,
       required: true,
     },
+    tax: {
+      type: Boolean,
+      required: true,
+    },
     product_id: {
       type: "String",
-      required: true,
+      required: false,
     },
     price_of_product: {
       type: String,
