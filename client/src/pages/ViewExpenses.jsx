@@ -293,7 +293,7 @@ export const ViewExpenses = () => {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
-  const filteredData = sortedDataSource.filter((record) => record.name.includes(searchTerm));
+  const filteredData = sortedDataSource.filter((record) => record?.name?.includes(searchTerm));
 
   return (
     <div className="pl-80 pr-28 bg-gradient-to-r from-indigo-900 via-violet-500 to-indigo-400 pb-20"
