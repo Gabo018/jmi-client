@@ -97,7 +97,7 @@ export const AddExpense = () => {
           name="payment_date"
           rules={[
             {
-              required: true,
+              required: false,
               message: "Please input your  Payment Date!",
             },
           ]}

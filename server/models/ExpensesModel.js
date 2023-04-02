@@ -13,7 +13,7 @@ const expensesSchema = new Schema(
     },
     payment_date: {
       type: Date,
-      required: true,
+      required: false,
     },
 
     total_payment: {
