@@ -389,7 +389,7 @@ apiRouters.get("/bill/bought-product/:userId", async (req, res) => {
 apiRouters.post("/addBill", async (req, res) => {
   try {
     const { name, due_date, payment_date, total_payment } = req.body;
-    if (!name || !due_date || !payment_date || !total_payment) {
+    if (!name || !due_date || !total_payment) {
       return res.status(500).json({
         status: 500,
         message: "Missing fields are required!",
@@ -616,7 +616,7 @@ apiRouters.post("/expenses", authToken, async (req, res) => {
   // const data = req.body;
   try {
     const { name, due_date, payment_date, total_payment } = req.body;
-    if (!name || !due_date || !payment_date || !total_payment) {
+    if (!name || !due_date || !total_payment) {
       return res.status(500).json({
         status: 500,
         message: "Missing fields are required!",
